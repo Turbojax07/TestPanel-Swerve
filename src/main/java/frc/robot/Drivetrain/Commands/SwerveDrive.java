@@ -37,7 +37,7 @@ public class SwerveDrive extends Command {
         if (zRotate < 0) zRotate += 0.2;
         
         Rotation2d angle = new Rotation2d(Math.atan2(zSpeed, xSpeed)).rotateBy(Rotation2d.fromDegrees(90));
-        drivetrain.setStates(0, angle);
+        drivetrain.setState(0, angle);
     }
 
     @Override
