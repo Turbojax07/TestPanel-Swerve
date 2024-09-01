@@ -11,7 +11,7 @@ public final class Constants {
         public static final int flDriveId = 1;
         public static final int flTurnId = 2;
         public static final int flEncoderId = 0;
-        public static final double flEncoderOffset = 0.785; // Rotations
+        public static final double flEncoderOffset = 0.283; // Rotations
 
         public static final int frDriveId = 3;
         public static final int frTurnId = 4;
@@ -56,7 +56,7 @@ public final class Constants {
         public static final double drivePositionConversionFactor = wheelDiameter * Math.PI / driveGearRatio;
         public static final double driveVelocityConversionFactor = drivePositionConversionFactor / 60;
 
-        public static final double turnPositionConversionFactor = 360 / turnGearRatio;
+        public static final double turnPositionConversionFactor = 2 * Math.PI / turnGearRatio;
         public static final double turnVelocityConversionFactor = turnPositionConversionFactor / 60;
     }
 }
