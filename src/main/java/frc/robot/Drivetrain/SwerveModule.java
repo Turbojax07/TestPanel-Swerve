@@ -68,6 +68,10 @@ public class SwerveModule extends SubsystemBase {
         turnPID.setD(DriveConstants.turnD);
         turnPID.setFF(DriveConstants.turnFF);
 
+        turnPID.setPositionPIDWrappingEnabled(true);
+        turnPID.setPositionPIDWrappingMaxInput(Math.PI);
+        turnPID.setPositionPIDWrappingMinInput(-Math.PI);
+
         // Initializing the cancoder
         absEncoder = new AnalogEncoder(absEncoderId);
         absEncoder.setPositionOffset(absEncoderOffset);
@@ -138,8 +142,10 @@ public class SwerveModule extends SubsystemBase {
         SmartDashboard.putNumber("/DesiredSpeed", state.speedMetersPerSecond);
         SmartDashboard.putNumber("/DesiredAngle", state.angle.getDegrees());
 
+        SwerveModuleState newState = SwerveModuleState.optimize(state, getAngle());
+
         // Setting the speed and position of each motor
-        drivePID.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
-        turnPID.setReference(getAdjustedAngle(state.angle).getRadians(), ControlType.kPosition);
+        drivePID.setReference(newState.speedMetersPerSecond, ControlType.kVelocity);
+        turnPID.setReference(newState.angle.getRadians(), ControlType.kPosition);
     }
 }
