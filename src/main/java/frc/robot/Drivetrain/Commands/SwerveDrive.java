@@ -36,7 +36,7 @@ public class SwerveDrive extends Command {
         if (zRotate > 0) zRotate -= 0.2;
         if (zRotate < 0) zRotate += 0.2;
         
-        Rotation2d angle = new Rotation2d(Math.atan2(zSpeed, xSpeed)).rotateBy(Rotation2d.fromDegrees(90));
+        Rotation2d angle = new Rotation2d((xSpeed == 0 && zSpeed == 0) ? 0 : Math.atan2(-xSpeed, -zSpeed));
         drivetrain.setState(0, angle);
     }
 
