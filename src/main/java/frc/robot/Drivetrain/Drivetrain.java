@@ -99,14 +99,16 @@ public class Drivetrain extends SubsystemBase {
                 DriveConstants.frEncoderId,
                 DriveConstants.frEncoderOffset);
 
-        backRight = new SwerveModule(
-                "BackRight",
-                DriveConstants.brDriveId,
-                DriveConstants.brTurnId,
-                DriveConstants.brEncoderId,
-                DriveConstants.brEncoderOffset);
+        // backRight = new SwerveModule(
+        //         "BackRight",
+        //         DriveConstants.brDriveId,
+        //         DriveConstants.brTurnId,
+        //         DriveConstants.brEncoderId,
+        //         DriveConstants.brEncoderOffset);
 
-        modules = new SwerveModule[] { frontLeft, frontRight, backLeft, backRight };
+        backRight = null;
+
+        modules = new SwerveModule[] { frontLeft, frontRight, backLeft};
         kinematics = new SwerveDriveKinematics(
                 new Translation2d( PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
                 new Translation2d( PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0),
@@ -120,6 +122,8 @@ public class Drivetrain extends SubsystemBase {
         }
 
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), positions);
+
+        initialize();
     }
 
     /**

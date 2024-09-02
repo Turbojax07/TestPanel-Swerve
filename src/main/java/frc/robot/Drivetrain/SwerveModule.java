@@ -52,11 +52,11 @@ public class SwerveModule extends SubsystemBase {
 
         drive.restoreFactoryDefaults();
 
-        drive.setSmartCurrentLimit(60);
+        drive.setSmartCurrentLimit(40);
 
         drive.setInverted(true);
 
-        drive.setIdleMode(IdleMode.kBrake);
+        drive.setIdleMode(IdleMode.kCoast);
 
         driveRelEnc = drive.getEncoder();
         driveRelEnc.setPosition(0.0);
@@ -76,10 +76,6 @@ public class SwerveModule extends SubsystemBase {
 
         drive.burnFlash();
 
-
-
-        if (turnID == 8) return;
-
         // Configuring turn motor separately so I can leave out motor 8
         turn = new CANSparkMax(turnID, MotorType.kBrushless);
 
@@ -89,7 +85,7 @@ public class SwerveModule extends SubsystemBase {
         
         turn.setInverted(false);
         
-        turn.setIdleMode(IdleMode.kBrake);
+        turn.setIdleMode(IdleMode.kCoast);
         
         turnRelEnc = turn.getEncoder();
         turnRelEnc.setPositionConversionFactor(PhysicalConstants.turnPositionConversionFactor);
@@ -131,7 +127,6 @@ public class SwerveModule extends SubsystemBase {
      * Sets the relative encoder to the value measured by the absolute encoder
      */
     public void initializeEncoder() {
-        if (turnRelEnc == null) return;
         turnRelEnc.setPosition((absEncoder.getAbsolutePosition() - encOffset) * (2.0 * Math.PI));
     }
 
@@ -149,7 +144,6 @@ public class SwerveModule extends SubsystemBase {
         if (theta <= -Math.PI) {
             theta+=(2.0 * Math.PI);
         }
-        if (turnRelEnc == null) return -theta;
         return turnRelEnc.getPosition() - theta;
     }
 
@@ -168,7 +162,6 @@ public class SwerveModule extends SubsystemBase {
      * @return Returns the current heading of the module in cheesians
      */
     public double getHeading() {
-        if (turnRelEnc == null) return 0;
         return turnRelEnc.getPosition()%(2.0 * Math.PI);
     }
 
@@ -190,7 +183,6 @@ public class SwerveModule extends SubsystemBase {
      * @return Returns the current being drawn by the turn motor
      */
     public double getTurnCurrent() {
-        if (turn == null) return 0;
         return turn.getOutputCurrent();
     }
 
@@ -211,7 +203,6 @@ public class SwerveModule extends SubsystemBase {
 
         drivePID.setReference(driveAccelerationLimiter.calculate(optimizedState.speedMetersPerSecond), ControlType.kVelocity);
 
-        if (turnPID == null) return;
         turnPID.setReference(adjustedAngle, ControlType.kPosition, 0);
     }
 
@@ -227,7 +218,6 @@ public class SwerveModule extends SubsystemBase {
         double adjustedAngle = getAdjustedAngle(desiredAngle);
 
         drivePID.setReference(optimizedState.speedMetersPerSecond, ControlType.kVelocity, 0);
-        if (turnPID == null) return;
         turnPID.setReference(adjustedAngle, ControlType.kPosition, 0);
     }
 
@@ -236,7 +226,6 @@ public class SwerveModule extends SubsystemBase {
      */
     public void stop() {
         drive.stopMotor();
-        if (turn == null) return;
         turn.stopMotor();
     }
 
