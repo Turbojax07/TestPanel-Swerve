@@ -19,8 +19,7 @@ import frc.robot.Drivetrain.Commands.DefaultDrive;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    private final Joystick keyboard1 = new Joystick(0);
-    private final Joystick keyboard2 = new Joystick(1);
+    private final CommandXboxController controller = new CommandXboxController(0);
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer(boolean isSimulation) {
@@ -57,6 +56,6 @@ public class RobotContainer {
      * @return The command to run in Teleop mode.
      */
     public Command getTeleopCommand() {
-        return new DefaultDrive(() -> keyboard1.getRawAxis(0), () -> keyboard1.getRawAxis(1), () -> keyboard2.getRawAxis(0));
+        return new DefaultDrive(() -> controller.getLeftX(), () -> controller.getLeftY(), () -> controller.getRightX());
     }
 }
