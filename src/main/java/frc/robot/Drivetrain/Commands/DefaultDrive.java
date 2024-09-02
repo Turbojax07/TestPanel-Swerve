@@ -3,6 +3,7 @@ package frc.robot.Drivetrain.Commands;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,9 +31,9 @@ public class DefaultDrive extends Command {
 
     public void execute() {
         drivetrain.drive(ChassisSpeeds.fromFieldRelativeSpeeds(
-            x_trans.getAsDouble() * DriveConstants.maxDriveSpeed,
-            y_trans.getAsDouble() * DriveConstants.maxDriveSpeed,
-            z_rot.getAsDouble() * DriveConstants.maxTurnSpeed, 
+            MathUtil.applyDeadband(x_trans.getAsDouble(), 0.2) * DriveConstants.maxDriveSpeed,
+            MathUtil.applyDeadband(y_trans.getAsDouble(), 0.2) * DriveConstants.maxDriveSpeed,
+            MathUtil.applyDeadband(z_rot.getAsDouble(), 0.2) * DriveConstants.maxTurnSpeed, 
             drivetrain.getAngle()));
     }
 
