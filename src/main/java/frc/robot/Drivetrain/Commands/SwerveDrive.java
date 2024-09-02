@@ -3,7 +3,9 @@ package frc.robot.Drivetrain.Commands;
 import java.util.function.Supplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 
 public class SwerveDrive extends Command {
@@ -27,17 +29,20 @@ public class SwerveDrive extends Command {
         double xSpeed = MathUtil.applyDeadband(xSpeedSupplier.get(), 0.2);
         if (xSpeed > 0) xSpeed -= 0.2;
         if (xSpeed < 0) xSpeed += 0.2;
+        xSpeed *= DriveConstants.maxDriveSpeed;
         
         double zSpeed = MathUtil.applyDeadband(zSpeedSupplier.get(), 0.2);
         if (zSpeed > 0) zSpeed -= 0.2;
         if (zSpeed < 0) zSpeed += 0.2;
+        zSpeed *= DriveConstants.maxDriveSpeed;
         
         double zRotate = MathUtil.applyDeadband(zRotSupplier.get(), 0.2);
         if (zRotate > 0) zRotate -= 0.2;
         if (zRotate < 0) zRotate += 0.2;
+        zRotate *= DriveConstants.maxTurnSpeed;
         
-        Rotation2d angle = new Rotation2d((xSpeed == 0 && zSpeed == 0) ? 0 : Math.atan2(-xSpeed, -zSpeed));
-        drivetrain.setState(0, angle);
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, zSpeed, zRotate, drivetrain.getAngle());
+        drivetrain.drive(speeds);
     }
 
     @Override
