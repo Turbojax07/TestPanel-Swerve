@@ -6,7 +6,6 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -17,17 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
 
-public class SwerveModule extends SubsystemBase {
-
-    /*           backLeft    frontLeft
-     *                 x_____x
-     *                 |     |
-     * --------shooter-----------intake--- x-axis
-     *                 |_____|
-     *                 x     x
-     *           backRight   frontRight
-     */
-    
+public class SwerveModule extends SubsystemBase {    
     private String name;
 
     private CANSparkMax drive, turn;
@@ -116,18 +105,20 @@ public class SwerveModule extends SubsystemBase {
         // Logger.recordOutput(name + "/Turn/Position", turnRelEnc.getPosition());
         // Logger.recordOutput(name + "/Turn/Temperature", turn.getMotorTemperature());
 
-        SmartDashboard.putNumber(name + "/AbsPosition", absEncoder.getAbsolutePosition());
-        SmartDashboard.putNumber(name + "/TurnAngle", getHeading());
-        SmartDashboard.putNumber(name + "/WheelSpeed", driveRelEnc.getVelocity());
-        SmartDashboard.putNumber(name + "/StateMS", state.speedMetersPerSecond);
-        SmartDashboard.putNumber(name + "/CurrentDraw", drive.getOutputCurrent());
+        SmartDashboard.putNumber("/" + name + "/AbsPosition", absEncoder.getAbsolutePosition());
+        SmartDashboard.putNumber("/" + name + "/AbsPoswOffset", absEncoder.getAbsolutePosition() - encOffset);
+        SmartDashboard.putNumber("/" + name + "/RealAngle", getHeading().getDegrees());
+        SmartDashboard.putNumber("/" + name + "/RealSpeed", getVelocity());
+        SmartDashboard.putNumber("/" + name + "/ExpectedAngle", state.angle.getDegrees());
+        SmartDashboard.putNumber("/" + name + "/ExpectedSpeed", state.speedMetersPerSecond);
+        SmartDashboard.putNumber("/" + name + "/CurrentDraw", drive.getOutputCurrent());
     }
 
     /**
      * Sets the relative encoder to the value measured by the absolute encoder
      */
     public void initializeEncoder() {
-        turnRelEnc.setPosition((absEncoder.getAbsolutePosition() - encOffset) * (2.0 * Math.PI));
+        // turnRelEnc.setPosition((absEncoder.getAbsolutePosition() - encOffset) * (2.0 * Math.PI));
     }
 
     /**
@@ -136,7 +127,7 @@ public class SwerveModule extends SubsystemBase {
      * @return The input angle to the turn PID
      */
     public double getAdjustedAngle(double angle) {
-        double theta = getHeading() - angle;
+        double theta = getHeading().getRadians() - angle;
 
         if (theta >= Math.PI) {
             theta-=(2.0 * Math.PI);
@@ -161,22 +152,30 @@ public class SwerveModule extends SubsystemBase {
     /**
      * @return Returns the current heading of the module in cheesians
      */
-    public double getHeading() {
-        return turnRelEnc.getPosition()%(2.0 * Math.PI);
+    public Rotation2d getHeading() {
+        return new Rotation2d(turnRelEnc.getPosition() % (2.0 * Math.PI));
+    }
+
+    public void setHeading(Rotation2d angle) {
+        turnRelEnc.setPosition(angle.getRadians());
+    }
+
+    public double getVelocity() {
+        return driveRelEnc.getVelocity();
     }
 
     /**
      * @return Returns the position of the module
      */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(driveRelEnc.getPosition(), new Rotation2d(getHeading()));
+        return new SwerveModulePosition(driveRelEnc.getPosition(), getHeading());
     }
 
     /**
      * @return Returns the current state of the module
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(driveRelEnc.getVelocity(), new Rotation2d(getHeading()));
+        return new SwerveModuleState(driveRelEnc.getVelocity(), getHeading());
     }
 
     /**
@@ -196,10 +195,10 @@ public class SwerveModule extends SubsystemBase {
 
     public void setRatedState(SwerveModuleState state) {
         this.state = state;
-        SwerveModuleState optimizedState = SwerveModuleState.optimize(state, new Rotation2d(getHeading()));
+        SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getHeading());
 
         double desiredAngle = optimizedState.angle.getRadians();
-        double adjustedAngle = getAdjustedAngle(desiredAngle);
+        double adjustedAngle = desiredAngle;
 
         drivePID.setReference(driveAccelerationLimiter.calculate(optimizedState.speedMetersPerSecond), ControlType.kVelocity);
 
@@ -212,7 +211,7 @@ public class SwerveModule extends SubsystemBase {
      */
     public void setState(SwerveModuleState state) {
         this.state = state;
-        SwerveModuleState optimizedState = SwerveModuleState.optimize(state, new Rotation2d(getHeading()));
+        SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getHeading());
 
         double desiredAngle = optimizedState.angle.getRadians();
         double adjustedAngle = getAdjustedAngle(desiredAngle);
