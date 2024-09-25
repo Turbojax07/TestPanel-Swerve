@@ -3,9 +3,7 @@ package frc.robot.Drivetrain;
 import java.util.Objects;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.configs.Pigeon2FeaturesConfigs;
 import com.ctre.phoenix6.hardware.Pigeon2;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -14,38 +12,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
 
-/*
-                         __
-                   _.--""  |
-    .----.     _.-'   |/\| |.--.
-    |1086|__.-'   _________|  |_)  _______________  
-    |  .-""-.""""" ___,    `----'"))   __   .-""-.""""--._  
-    '-' ,--. `   |blue|   .---.       |:.| ' ,--. `      _`.
-     ( (    ) )__|cheese|__ \\|// _..--  \/ ( (    ) )--._".-.
-      . `--' ;\__________________..--------. `--' ;--------'
-       `-..-'                               `-..-'
-
-*/
-
 public class Drivetrain extends SubsystemBase {
-
-    /*
-     * backLeft frontLeft
-     * x_____x
-     * | |
-     * --------shooter-----------intake--- x-axis
-     * |_____|
-     * x x
-     * backRight frontRight
-     */
-
     private final SwerveModule frontLeft;
     private final SwerveModule frontRight;
     private final SwerveModule backLeft;
@@ -61,10 +34,10 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModulePosition[] positions = new SwerveModulePosition[4];
 
     private SwerveModuleState[] xStates = new SwerveModuleState[] {
-            new SwerveModuleState(0.0, new Rotation2d(Math.PI / 4.0)),
-            new SwerveModuleState(0.0, new Rotation2d(-Math.PI / 4.0)),
-            new SwerveModuleState(0.0, new Rotation2d(-Math.PI / 4.0)),
-            new SwerveModuleState(0.0, new Rotation2d(Math.PI / 4.0)),
+            new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0)),
+            new SwerveModuleState(0, new Rotation2d(      Math.PI / 4.0)),
+            new SwerveModuleState(0, new Rotation2d(      Math.PI / 4.0)),
+            new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0)),
     };
 
     private SwerveDriveOdometry odometry;
@@ -99,21 +72,19 @@ public class Drivetrain extends SubsystemBase {
                 DriveConstants.frEncoderId,
                 DriveConstants.frEncoderOffset);
 
-        // backRight = new SwerveModule(
-        //         "BackRight",
-        //         DriveConstants.brDriveId,
-        //         DriveConstants.brTurnId,
-        //         DriveConstants.brEncoderId,
-        //         DriveConstants.brEncoderOffset);
+        backRight = new SwerveModule(
+                "BackRight",
+                DriveConstants.brDriveId,
+                DriveConstants.brTurnId,
+                DriveConstants.brEncoderId,
+                DriveConstants.brEncoderOffset);
 
-        backRight = null;
-
-        modules = new SwerveModule[] { frontLeft, frontRight, backLeft};
+        modules = new SwerveModule[] { frontLeft, frontRight, backLeft, backRight};
         kinematics = new SwerveDriveKinematics(
-                new Translation2d( PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
-                new Translation2d( PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0),
-                new Translation2d(-PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
-                new Translation2d(-PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0));
+            new Translation2d(/* FL */-PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
+            new Translation2d(/* FR */ PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
+            new Translation2d(/* BL */-PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0),
+            new Translation2d(/* BR */ PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0));
 
         gyro = new Pigeon2(DriveConstants.gyroId);
 
@@ -157,6 +128,7 @@ public class Drivetrain extends SubsystemBase {
         field.setRobotPose(odometry.getPoseMeters());
 
         SmartDashboard.putData(field);
+        SmartDashboard.putNumber("/Drivetrain/GyroAngle", getAngle().getDegrees());
     }
 
     /**
@@ -168,8 +140,15 @@ public class Drivetrain extends SubsystemBase {
     public void drive(ChassisSpeeds speeds) {
         SwerveModuleState[] desiredStates = kinematics.toSwerveModuleStates(speeds);
 
-        for (int i = 0; i < modules.length; i++) {
-            modules[i].setState(desiredStates[i]);
+        if (speeds.omegaRadiansPerSecond == 0) {
+            for (int i = 0; i < 4; i++) {
+                modules[i].setState(desiredStates[i]);
+            }
+        } else {
+            modules[0].setState(desiredStates[2]); // flm -> frs
+            modules[1].setState(desiredStates[3]); // frm -> brs
+            modules[2].setState(desiredStates[0]); // blm -> fls
+            modules[3].setState(desiredStates[1]); // brm -> bls
         }
     }
 
@@ -277,9 +256,9 @@ public class Drivetrain extends SubsystemBase {
     /**
      * Stops all modules
      */
-    public void stop() {
-        for (SwerveModule m : modules) {
-            m.stop();
+    public void makeX() {
+        for (int i = 0; i < 4; i++) {
+            modules[i].setState(xStates[i]);
         }
     }
 
