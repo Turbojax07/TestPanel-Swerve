@@ -10,14 +10,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 
-public class DefaultDrive extends Command {
+public class SwerveDrive extends Command {
     private final Supplier<Double> x_trans;
     private final Supplier<Double> y_trans;
     private final Supplier<Double> z_rotat;
 
     private final Drivetrain drivetrain;
 
-    public DefaultDrive(Supplier<Double> x_trans, Supplier<Double> y_trans, Supplier<Double> z_rot) {
+    public SwerveDrive(Supplier<Double> x_trans, Supplier<Double> y_trans, Supplier<Double> z_rot) {
         this.x_trans = x_trans;
         this.y_trans = y_trans;
         this.z_rotat = z_rot;
@@ -67,7 +67,7 @@ public class DefaultDrive extends Command {
         SmartDashboard.putNumber("/Controller/RightX_Adjusted", zRotat);
 
         // Creating the ChassisSpeeds object.
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, zRotat, drivetrain.getAngle());
+        ChassisSpeeds speeds = new ChassisSpeeds(xSpeed, ySpeed, zRotat);
 
         // Driving the robot
         drivetrain.drive(speeds);
@@ -78,5 +78,4 @@ public class DefaultDrive extends Command {
     }
 
     public void end(boolean interr) {}
-    
 }
