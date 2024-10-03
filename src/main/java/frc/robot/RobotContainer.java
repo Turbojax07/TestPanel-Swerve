@@ -4,30 +4,60 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import frc.robot.Drivetrain.Commands.*;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Drivetrain.Drivetrain;
+import frc.robot.Drivetrain.Commands.*;
 
+/**
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * subsystems, commands, and trigger mappings) should be declared here.
+ */
 public class RobotContainer {
-    // Initializing the subsystems
-    Drivetrain drivetrain = Drivetrain.getInstance();
+    private final CommandXboxController controller = new CommandXboxController(0);
 
-    // Creating the controllers
-    CommandXboxController joystick = new CommandXboxController(0);
-
+    /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer(boolean isSimulation) {
+        // Initializing subsystems
+        Drivetrain.getInstance();
+
+        // Configure the trigger bindings
         configureBindings();
     }
 
-    private void configureBindings() {}
+    /**
+     * Use this method to define your trigger->command mappings. Triggers can be created via the
+     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+     * predicate, or via the named factories in {@link
+     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+     * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+     * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+     * joysticks}.
+     */
+    private void configureBindings() {
+        controller.b().whileTrue(new InstantCommand(() -> Drivetrain.getInstance().initialize()));
+    }
 
+    /**
+     * This function is where you set the Autonomous command for the main {@link Robot} class to use.
+     *
+     * @return The command to run in Autonomous mode.
+     */
     public Command getAutonomousCommand() {
         return new PrintCommand("No auto lol");
     }
 
+    /**
+     * This function is where you set the Teleop command for the {@link Robot} class to use.
+     * 
+     * @return The command to run in Teleop mode.
+     */
     public Command getTeleopCommand() {
-        return new SwerveDrive(() -> joystick.getLeftX(), () -> joystick.getLeftY(), () -> joystick.getRightX());
+        return new SwerveDrive(() -> controller.getLeftX(), () -> controller.getLeftY(), () -> controller.getRightX());
     }
 }
