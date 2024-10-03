@@ -229,8 +229,8 @@ public class Drivetrain extends SubsystemBase {
      * @param pose The position to set odometry to.
      */
     public void resetPose(Pose2d pose) {
-        field.setRobotPose(p);
-        odometry.resetPosition(gyro.getRotation2d(), positions, p);
+        field.setRobotPose(pose);
+        odometry.resetPosition(gyro.getRotation2d(), positions, pose);
     }
 
     /**
@@ -245,7 +245,7 @@ public class Drivetrain extends SubsystemBase {
     /**
      * Sets the modules in an X pattern.
      */
-    public void setX() {
+    public void makeX() {
         for (int i = 0; i < modules.length; i++) {
             modules[i].setState(xStates[i]);
         }
