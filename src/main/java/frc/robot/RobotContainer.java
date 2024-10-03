@@ -41,6 +41,8 @@ public class RobotContainer {
      */
     private void configureBindings() {
         controller.b().whileTrue(new InstantCommand(() -> Drivetrain.getInstance().initialize()));
+        controller.povLeft().toggleOnTrue(new YouSpinMeRound(1));
+        controller.povRight().toggleOnTrue(new YouSpinMeRound(-1));
     }
 
     /**
