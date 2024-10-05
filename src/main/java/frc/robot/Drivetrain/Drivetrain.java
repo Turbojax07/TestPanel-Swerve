@@ -89,10 +89,6 @@ public class Drivetrain extends SubsystemBase {
         odometry.update(getAngle(), positions);
 
 
-        System.out.println(flx);
-
-
-
         field.setRobotPose(odometry.getPoseMeters());
 
         SmartDashboard.putData("/Field", field);
