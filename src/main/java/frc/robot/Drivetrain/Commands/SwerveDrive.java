@@ -2,7 +2,6 @@ package frc.robot.Drivetrain.Commands;
 
 import java.util.function.Supplier;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
@@ -41,8 +40,7 @@ public class SwerveDrive extends Command {
         if (zRotate < 0) zRotate += 0.2;
         zRotate *= DriveConstants.maxTurnSpeed;
         
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, zSpeed, zRotate, drivetrain.getAngle());
-        drivetrain.drive(speeds);
+        drivetrain.drive(new ChassisSpeeds(xSpeed, zSpeed, zRotate));
     }
 
     @Override
