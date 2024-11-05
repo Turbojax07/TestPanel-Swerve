@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
+    public static final boolean replayEnabled = false;
+
     public static class DriveConstants {
         public static final int flDriveId = 1;
         public static final int flTurnId = 2;
