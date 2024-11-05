@@ -9,8 +9,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Drivetrain.Commands.SwerveDrive;
+import frc.robot.Drivetrain.Commands.YouSpinMeRound;
 import frc.robot.Drivetrain.Drivetrain;
-import frc.robot.Drivetrain.Commands.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -22,7 +23,7 @@ public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
-    public RobotContainer(boolean isSimulation) {
+    public RobotContainer() {
         // Initializing subsystems
         Drivetrain.getInstance();
 
