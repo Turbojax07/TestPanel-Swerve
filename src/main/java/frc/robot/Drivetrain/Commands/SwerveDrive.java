@@ -1,7 +1,7 @@
 package frc.robot.Drivetrain.Commands;
 
 import java.util.function.Supplier;
-import frc.robot.Drivetrain.SwerveModule;
+import frc.robot.Drivetrain.SwerveModuleIO;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -23,8 +23,8 @@ public class SwerveDrive extends Command {
         this.z_rotat = z_rot;
 
         this.drivetrain = Drivetrain.getInstance();
-        for (SwerveModule module : drivetrain.getModules()) {
-            module.setHeading(new Rotation2d());
+        for (SwerveModuleIO module : drivetrain.getModules()) {
+            module.setAngle(new Rotation2d());
         }
 
         addRequirements(drivetrain);
