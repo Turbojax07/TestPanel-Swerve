@@ -5,13 +5,14 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.Drivetrain.Drivetrain;
+import frc.robot.Drivetrain.SwerveModuleIOSim;
 import frc.robot.Drivetrain.Commands.SwerveDrive;
 import frc.robot.Drivetrain.Commands.YouSpinMeRound;
-import frc.robot.Drivetrain.Drivetrain;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,7 +26,11 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         // Initializing subsystems
-        Drivetrain.getInstance();
+        Drivetrain.getInstance(
+            new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flTurnId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
+            new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blTurnId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
+            new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frTurnId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
+            new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brTurnId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
 
         // Configure the trigger bindings
         configureBindings();
@@ -41,7 +46,6 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        controller.b().whileTrue(new InstantCommand(() -> Drivetrain.getInstance().initialize()));
         controller.povLeft().toggleOnTrue(new YouSpinMeRound(1));
         controller.povRight().toggleOnTrue(new YouSpinMeRound(-1));
     }

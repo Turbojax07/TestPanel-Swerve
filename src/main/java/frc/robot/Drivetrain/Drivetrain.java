@@ -35,7 +35,7 @@ public class Drivetrain extends SubsystemBase {
             new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0)),
             new SwerveModuleState(0, new Rotation2d(      Math.PI / 4.0)),
             new SwerveModuleState(0, new Rotation2d(      Math.PI / 4.0)),
-            new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0))
+            new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0)),
     };
 
     private SwerveDriveOdometry odometry;
@@ -43,40 +43,34 @@ public class Drivetrain extends SubsystemBase {
     private static Drivetrain instance;
 
     public static Drivetrain getInstance() {
-        if (instance == null) instance = new Drivetrain();
+        if (instance == null) {
+            SmartDashboard.putString("/ERROR", "Drivetrain using default instance.");
+            instance = new Drivetrain(null, null, null, null);
+        }
 
         return instance;
     }
 
-    public Drivetrain() {
-        flModuleIO = new SwerveModuleIOSparkMax(
-                "FrontLeft",
-                DriveConstants.flDriveId,
-                DriveConstants.flTurnId,
-                DriveConstants.flEncoderId,
-                DriveConstants.flEncoderOffset);
+    public static Drivetrain getInstance(SwerveModuleIO flModuleIO, SwerveModuleIO frModuleIO, SwerveModuleIO blModuleIO, SwerveModuleIO brModuleIO) {
+        // Replaces the instance variable if instance doesn't exist, or if the IO classes are different.
+        if (instance == null ||
+            !instance.flModuleIO.getClass().equals(flModuleIO.getClass()) ||
+            !instance.frModuleIO.getClass().equals(frModuleIO.getClass()) ||
+            !instance.blModuleIO.getClass().equals(blModuleIO.getClass()) ||
+            !instance.brModuleIO.getClass().equals(brModuleIO.getClass())) {
 
-        frModuleIO = new SwerveModuleIOSparkMax(
-                "FrontRight",
-                DriveConstants.frDriveId,
-                DriveConstants.frTurnId,
-                DriveConstants.frEncoderId,
-                DriveConstants.frEncoderOffset);
+            instance = new Drivetrain(flModuleIO, frModuleIO, blModuleIO, brModuleIO);
+        }
 
-        blModuleIO = new SwerveModuleIOSparkMax(
-                "BackLeft",
-                DriveConstants.blDriveId,
-                DriveConstants.blTurnId,
-                DriveConstants.blEncoderId,
-                DriveConstants.blEncoderOffset);
+        return instance;
+    }
 
-        brModuleIO = new SwerveModuleIOSparkMax(
-                "BackRight",
-                DriveConstants.brDriveId,
-                DriveConstants.brTurnId,
-                DriveConstants.brEncoderId,
-                DriveConstants.brEncoderOffset);
-
+    public Drivetrain(SwerveModuleIO flModuleIO, SwerveModuleIO frModuleIO, SwerveModuleIO blModuleIO, SwerveModuleIO brModuleIO) {
+        this.flModuleIO = flModuleIO;
+        this.frModuleIO = frModuleIO;
+        this.blModuleIO = blModuleIO;
+        this.brModuleIO = brModuleIO;
+        
         modules = new SwerveModuleIO[] { flModuleIO, frModuleIO, blModuleIO, brModuleIO};
         kinematics = new SwerveDriveKinematics(
                 new Translation2d(/* FL */-PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
@@ -135,24 +129,6 @@ public class Drivetrain extends SubsystemBase {
             modules[1].setState(desiredStates[3]); // frm -> brs
             modules[2].setState(desiredStates[0]); // blm -> fls
             modules[3].setState(desiredStates[1]); // brm -> bls
-        }
-    }
-
-    /**
-     * Drives the robot at the desired speeds with an overall feedback loop to
-     * ensure the speeds are met
-     *
-     * @param speeds The desired speeds of the drivetrain
-     */
-    public void driveRated(ChassisSpeeds speeds) {
-        ChassisSpeeds newSpeeds = new ChassisSpeeds(
-                speeds.vxMetersPerSecond,// + 0.001 * (currentSpeeds.vxMetersPerSecond - speeds.vxMetersPerSecond),
-                speeds.vyMetersPerSecond,// + 0.001 * (currentSpeeds.vyMetersPerSecond - speeds.vyMetersPerSecond),
-                speeds.omegaRadiansPerSecond);// + 0.0001 * (gyro.getYawVelocity().getRadians() - speeds.omegaRadiansPerSecond));
-        SwerveModuleState[] desiredStates = kinematics.toSwerveModuleStates(newSpeeds);
-
-        for (int i = 0; i < modules.length; i++) {
-            modules[i].setState(desiredStates[i]);
         }
     }
 
