@@ -13,6 +13,8 @@ import frc.robot.Drivetrain.Drivetrain;
 import frc.robot.Drivetrain.SwerveModuleIOSim;
 import frc.robot.Drivetrain.Commands.SwerveDrive;
 import frc.robot.Drivetrain.Commands.YouSpinMeRound;
+import frc.robot.Gyro.Gyro;
+import frc.robot.Gyro.GyroIOPigeon2;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -26,6 +28,9 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         // Initializing subsystems
+        // Gyro needs to be initialized before Drivetrain or else it won't get the correct gyro.
+
+        Gyro.getInstance(new GyroIOPigeon2(DriveConstants.gyroId));
         Drivetrain.getInstance(
             new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flTurnId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
             new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blTurnId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),

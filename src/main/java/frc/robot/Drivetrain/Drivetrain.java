@@ -1,7 +1,5 @@
 package frc.robot.Drivetrain;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -13,8 +11,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
+import frc.robot.Gyro.Gyro;
 
 public class Drivetrain extends SubsystemBase {
     private SwerveModuleIO flModuleIO;
@@ -26,7 +24,7 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModuleIO[] modules;
     private Field2d field = new Field2d();
 
-    private Pigeon2 gyro;
+    private Gyro gyro;
 
     private SwerveModuleState[] states = new SwerveModuleState[4];
     private SwerveModulePosition[] positions = new SwerveModulePosition[4];
@@ -44,7 +42,7 @@ public class Drivetrain extends SubsystemBase {
 
     public static Drivetrain getInstance() {
         if (instance == null) {
-            SmartDashboard.putString("/ERROR", "Drivetrain using default instance.");
+            SmartDashboard.putString("/DRIVETRAINERROR", "Drivetrain using default instance.");
             instance = new Drivetrain(null, null, null, null);
         }
 
@@ -78,16 +76,16 @@ public class Drivetrain extends SubsystemBase {
                 new Translation2d(/* BL */-PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0),
                 new Translation2d(/* BR */ PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0));
 
-        gyro = new Pigeon2(DriveConstants.gyroId);
-        gyro.getConfigurator().apply(new Pigeon2Configuration());
-        gyro.setYaw(0);
+        gyro = Gyro.getInstance();
+        gyro.resetConfigs();
+        gyro.setAngle(new Rotation2d());
 
         for (int i = 0; i < modules.length; i++) {
             positions[i] = modules[i].getPosition();
             states[i] = modules[i].getState();
         }
 
-        odometry = new SwerveDriveOdometry(kinematics, gyro.getRotation2d(), positions);
+        odometry = new SwerveDriveOdometry(kinematics, gyro.getAngle(), positions);
     }
 
     /**
@@ -100,7 +98,7 @@ public class Drivetrain extends SubsystemBase {
             states[i] = modules[i].getState();
         }
 
-        odometry.update(gyro.getRotation2d(), positions);
+        odometry.update(gyro.getAngle(), positions);
         field.setRobotPose(odometry.getPoseMeters());
 
         SmartDashboard.putData(field);
@@ -191,16 +189,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public void resetPose(Pose2d pose) {
         field.setRobotPose(pose);
-        odometry.resetPosition(gyro.getRotation2d(), positions, pose);
-    }
-
-    /**
-     * Gets the angle of the drivetrain.
-     * 
-     * @return the angle of the drivetrain as a Rotation2d.
-     */
-    public Rotation2d getAngle() {
-        return gyro.getRotation2d();
+        odometry.resetPosition(gyro.getAngle(), positions, pose);
     }
 
     /**

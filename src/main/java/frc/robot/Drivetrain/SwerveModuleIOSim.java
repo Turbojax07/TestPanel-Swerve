@@ -1,5 +1,7 @@
 package frc.robot.Drivetrain;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -40,6 +42,8 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
         inputs.turnVoltage = 0;
         inputs.driveCurrent = 0;
         inputs.turnCurrent = 0;
+
+        Logger.processInputs(name, inputs);
     }
 
     @Override
