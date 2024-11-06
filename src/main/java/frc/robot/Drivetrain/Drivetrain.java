@@ -1,5 +1,9 @@
 package frc.robot.Drivetrain;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -8,9 +12,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
 import frc.robot.Gyro.Gyro;
 
@@ -86,6 +93,15 @@ public class Drivetrain extends SubsystemBase {
         }
 
         odometry = new SwerveDriveOdometry(kinematics, gyro.getAngle(), positions);
+
+        AutoBuilder.configureHolonomic(
+                this::getPose,
+                this::setPose,
+                this::getSpeeds,
+                this::drive,
+                new HolonomicPathFollowerConfig(DriveConstants.maxDriveSpeed, PhysicalConstants.robotWidth / 2.0, new ReplanningConfig()),
+                () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
+                this);
     }
 
     /**
@@ -156,6 +172,16 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
+     * Sets the odometry position and updates the gyro angle
+     * 
+     * @param pose The position to set odometry to.
+     */
+    public void setPose(Pose2d pose) {
+        field.setRobotPose(pose);
+        odometry.resetPosition(gyro.getAngle(), positions, pose);
+    }
+
+    /**
      * @return Returns all swerve module positions in order of [FL, FR, BL, BR]
      */
     public SwerveModulePosition[] getPositions() {
@@ -180,16 +206,6 @@ public class Drivetrain extends SubsystemBase {
             sum += m.getTurnCurrent();
         }
         return sum;
-    }
-
-    /**
-     * Sets the odometry position and updates the gyro angle
-     * 
-     * @param pose The position to set odometry to.
-     */
-    public void resetPose(Pose2d pose) {
-        field.setRobotPose(pose);
-        odometry.resetPosition(gyro.getAngle(), positions, pose);
     }
 
     /**
