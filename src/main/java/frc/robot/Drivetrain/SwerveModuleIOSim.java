@@ -2,104 +2,165 @@ package frc.robot.Drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.robot.Constants.PhysicalConstants;
 
 public class SwerveModuleIOSim implements SwerveModuleIO {
     private String name;
-    private TalonFX driveMotor;
-    private TalonFX turnMotor;
+
+    private FlywheelSim driveSim;
+
+    private TalonFX drive;
+    private TalonFX steer;
 
     private SwerveModuleIOInputsAutoLogged inputs;
-    
-    public SwerveModuleIOSim(String name, int driveId, int turnId, int encoderId, double encoderOffset) {
+
+    public SwerveModuleIOSim(String name, int driveId, int steerId, int encoderId, double encoderOffset) {
+    // driveSim.setState(encoderOffset);
+    driveSim.setInputVoltage(12);
+    driveSim.getAngularVelocityRPM();
+
         this.name = name;
 
-        driveMotor = new TalonFX(driveId);
-        turnMotor = new TalonFX(turnId);
+        // Initializing the motors
+        drive = new TalonFX(driveId);
+        steer = new TalonFX(steerId);
 
         inputs = new SwerveModuleIOInputsAutoLogged();
     }
 
-    public SwerveModuleState getState() {
-        return new SwerveModuleState();
-    }
-
-    public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition();
-    }
-
+    /** Updates the logged values.  Should be used in the periodic function. */
     @Override
     public void updateInputs() {
-        inputs.speedMetersPerSecond = 0;
-        inputs.distanceMeters = 0;
-        inputs.angleRadians = 0;
-        inputs.driveTemp = 0;
-        inputs.turnTemp = 0;
-        inputs.driveVoltage = 0;
-        inputs.turnVoltage = 0;
-        inputs.driveCurrent = 0;
-        inputs.turnCurrent = 0;
+        inputs.state = getState();
+        inputs.position = getPosition();
+
+        inputs.driveTemp = getDriveTemperature();
+        inputs.turnTemp = getTurnTemperature();
+
+        inputs.driveVoltage = getDriveVoltage();
+        inputs.turnVoltage = getTurnVoltage();
+
+        inputs.driveCurrent = getDriveCurrent();
+        inputs.turnCurrent = getTurnCurrent();
 
         Logger.processInputs(name, inputs);
     }
 
-    @Override
-    public double getDistance() {
-        return driveMotor.getPosition().getValueAsDouble();
+    /** Resets the angle of the relative encoder to 0. */
+    public void resetAngle() {
+        while (steer.setPosition(0) != StatusCode.OK);
     }
 
-    @Override
+    /**
+     * Gets the angle of the swerve module.
+     * 
+     * @return The angle as a Rotation2d.
+     */
     public Rotation2d getAngle() {
-        return new Rotation2d();
+        return Rotation2d.fromRotations(steer.getPosition().getValue());
     }
 
-    @Override
+    /**
+     * Sets the angle of the swerve module using closed-loop control.
+     * 
+     * @param angle The angle as a Rotation2d.
+     */
     public void setAngle(Rotation2d angle) {
-        turnMotor.setPosition(angle.getRotations());
+        steer.setControl(new PositionDutyCycle(angle.getRotations()));
     }
 
-    @Override
-    public double getSpeed() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
+    /**
+     * Gets the speed of the swerve module.
+     * 
+     * @return The speed in meters per second.
+     */
+    public double getVelocity() {
+        return drive.getVelocity().getValue() * PhysicalConstants.driveRotToMeters;
     }
 
-    @Override
-    public void setSpeed(double speed) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setSpeed'");
+    /**
+     * Sets the speed of the swerve module.
+     * 
+     * @param speed The speed in meters per second.
+     */
+    public void setVelocity(double speed) {
+        drive.setControl(new VelocityDutyCycle(speed / PhysicalConstants.driveRotToMeters));
     }
 
-    @Override
-    public double getDriveCurrent() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDriveCurrent'");
+    /**
+     * Gets the distance of the swerve module.
+     * 
+     * @return The distance in meters.
+     */
+    public double getDistance() {
+        return drive.getPosition().getValue() * PhysicalConstants.driveRotToMeters;
     }
 
-    @Override
-    public double getTurnCurrent() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTurnCurrent'");
+    /**
+     * Gets the position of the swerve module.
+     * 
+     * @return The position as a SwerveModulePosition.
+     */
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(getDistance(), getAngle());
     }
 
-    @Override
+    /**
+     * Gets the state of the swerve module.
+     * 
+     * @return The state as a SwerveModuleState.
+     */
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(getVelocity(), getAngle());
+    }
+
+    /**
+     * Sets the state of the swerve module.
+     * 
+     * @param state The state as a SwerveModuleState.
+     */
     public void setState(SwerveModuleState state) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setState'");
+        SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getAngle());
+
+        setVelocity(optimizedState.speedMetersPerSecond);
+        setAngle(optimizedState.angle);
     }
 
     @Override
     public double getDriveTemperature() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDriveTemperature'");
+        return drive.getDeviceTemp().getValue();
     }
 
     @Override
     public double getTurnTemperature() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTurnTemperature'");
+        return steer.getDeviceTemp().getValue();
+    }
+
+    @Override
+    public double getDriveVoltage() {
+        return drive.getMotorVoltage().getValue();
+    }
+
+    @Override
+    public double getTurnVoltage() {
+        return steer.getMotorVoltage().getValue();
+    }
+
+    @Override
+    public double getDriveCurrent() {
+        return drive.getStatorCurrent().getValue();
+    }
+
+    @Override
+    public double getTurnCurrent() {
+        return steer.getStatorCurrent().getValue();
     }
 }

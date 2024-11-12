@@ -8,9 +8,8 @@ import org.littletonrobotics.junction.AutoLog;
 public interface SwerveModuleIO {
     @AutoLog
     public class SwerveModuleIOInputs {
-        public double speedMetersPerSecond;
-        public double distanceMeters;
-        public double angleRadians;
+        public SwerveModuleState state;
+        public SwerveModulePosition position;
 
         public double driveTemp;
         public double turnTemp;
@@ -30,14 +29,17 @@ public interface SwerveModuleIO {
     public Rotation2d getAngle();
     public void setAngle(Rotation2d angle);
 
-    public double getSpeed();
-    public void setSpeed(double speed);
-
-    public double getDriveCurrent();
-    public double getTurnCurrent();
+    public double getVelocity();
+    public void setVelocity(double speed);
 
     public double getDriveTemperature();
     public double getTurnTemperature();
+
+    public double getDriveVoltage();
+    public double getTurnVoltage();
+
+    public double getDriveCurrent();
+    public double getTurnCurrent();
 
     public SwerveModuleState getState();
     public void setState(SwerveModuleState state);

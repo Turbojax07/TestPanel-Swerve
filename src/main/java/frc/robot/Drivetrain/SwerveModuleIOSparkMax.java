@@ -1,7 +1,5 @@
 package frc.robot.Drivetrain;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -9,13 +7,13 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private String name;
@@ -32,58 +30,58 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
     private SwerveModuleIOInputsAutoLogged inputs;
 
-    public SwerveModuleIOSparkMax(String name, int driveId, int turnId, int absEncoderId, double absEncoderOffset) {
+    public SwerveModuleIOSparkMax(String name, int driveId, int turnId, int encoderId, double encoderOffset) {
         this.name = name;
 
         // Configuring the drive motor
         driveMotor = new CANSparkMax(driveId, MotorType.kBrushless);
-        while(driveMotor.restoreFactoryDefaults() != REVLibError.kOk) {}
-        while(driveMotor.setSmartCurrentLimit(60) != REVLibError.kOk) {}
+        while (driveMotor.restoreFactoryDefaults() != REVLibError.kOk);
+        while (driveMotor.setSmartCurrentLimit(60) != REVLibError.kOk);
         driveMotor.setInverted(true);
-        while(driveMotor.setIdleMode(IdleMode.kCoast) != REVLibError.kOk) {}
+        while (driveMotor.setIdleMode(IdleMode.kCoast) != REVLibError.kOk);
 
         // Configuring the drive encoder
         driveEncoder = driveMotor.getEncoder();
-        while(driveEncoder.setPositionConversionFactor(PhysicalConstants.drivePositionConversionFactor) != REVLibError.kOk) {}
-        while(driveEncoder.setVelocityConversionFactor(PhysicalConstants.driveVelocityConversionFactor) != REVLibError.kOk) {}
+        while (driveEncoder.setPositionConversionFactor(PhysicalConstants.driveRotToMeters) != REVLibError.kOk);
+        while (driveEncoder.setVelocityConversionFactor(PhysicalConstants.driveRotToMeters / 60) != REVLibError.kOk);
 
         // Configuring the drive PID controller
         driveController = driveMotor.getPIDController();
-        while(driveController.setP(DriveConstants.driveP) != REVLibError.kOk) {}
-        while(driveController.setI(DriveConstants.driveI) != REVLibError.kOk) {}
-        while(driveController.setD(DriveConstants.driveD) != REVLibError.kOk) {}
-        while(driveController.setFF(DriveConstants.driveFF) != REVLibError.kOk) {}
+        while (driveController.setP(DriveConstants.driveP) != REVLibError.kOk);
+        while (driveController.setI(DriveConstants.driveI) != REVLibError.kOk);
+        while (driveController.setD(DriveConstants.driveD) != REVLibError.kOk);
+        while (driveController.setFF(DriveConstants.driveFF) != REVLibError.kOk);
 
         // Saving configs for the drive motor
-        while(driveMotor.burnFlash() != REVLibError.kOk) {}
+        while (driveMotor.burnFlash() != REVLibError.kOk);
 
         // Configuring the turn motor
         turnMotor = new CANSparkMax(turnId, MotorType.kBrushless);
-        while(turnMotor.restoreFactoryDefaults() != REVLibError.kOk) {}
-        while(turnMotor.setSmartCurrentLimit(35) != REVLibError.kOk) {}
+        while (turnMotor.restoreFactoryDefaults() != REVLibError.kOk);
+        while (turnMotor.setSmartCurrentLimit(35) != REVLibError.kOk);
         turnMotor.setInverted(false);
-        while(turnMotor.setIdleMode(IdleMode.kCoast) != REVLibError.kOk) {}
+        while (turnMotor.setIdleMode(IdleMode.kCoast) != REVLibError.kOk);
 
         // Configuring the turn encoder
         turnEncoder = turnMotor.getEncoder();
-        while(turnEncoder.setPositionConversionFactor(PhysicalConstants.turnPositionConversionFactor) != REVLibError.kOk) {}
-        while(turnEncoder.setVelocityConversionFactor(PhysicalConstants.turnVelocityConversionFactor) != REVLibError.kOk) {}
+        while (turnEncoder.setPositionConversionFactor(PhysicalConstants.turnRotToRad) != REVLibError.kOk);
+        while (turnEncoder.setVelocityConversionFactor(PhysicalConstants.turnRotToRad / 60) != REVLibError.kOk);
 
         // Confuguring the turn PID controller
         turnController = turnMotor.getPIDController();
-        while(turnController.setP(DriveConstants.turnP) != REVLibError.kOk) {}
-        while(turnController.setI(DriveConstants.turnI) != REVLibError.kOk) {}
-        while(turnController.setD(DriveConstants.turnD) != REVLibError.kOk) {}
-        while(turnController.setFF(DriveConstants.turnFF) != REVLibError.kOk) {}
+        while (turnController.setP(DriveConstants.turnP) != REVLibError.kOk);
+        while (turnController.setI(DriveConstants.turnI) != REVLibError.kOk);
+        while (turnController.setD(DriveConstants.turnD) != REVLibError.kOk);
+        while (turnController.setFF(DriveConstants.turnFF) != REVLibError.kOk);
 
         // Saving configs for the turn motor
-        while(turnMotor.burnFlash() != REVLibError.kOk) {}
+        while (turnMotor.burnFlash() != REVLibError.kOk);
 
         // Initializing the analog encoder
-        absEncoder = new AnalogEncoder(absEncoderId);
+        absEncoder = new AnalogEncoder(encoderId);
 
         // Setting the turn encoder's position to one in this range.
-        while(turnEncoder.setPosition((absEncoder.get() - absEncoderOffset) * Math.PI * 2) != REVLibError.kOk) {}
+        while (turnEncoder.setPosition((absEncoder.get() - encoderOffset) * Math.PI * 2) != REVLibError.kOk);
 
         inputs = new SwerveModuleIOInputsAutoLogged();
     }
@@ -91,22 +89,24 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     /** Updates the logged values.  Should be used in the periodic function. */
     @Override
     public void updateInputs() {
-        inputs.angleRadians = 0;
-        inputs.distanceMeters = 0;
-        inputs.driveCurrent = 0;
-        inputs.driveTemp = 0;
-        inputs.driveVoltage = 0;
-        inputs.speedMetersPerSecond = 0;
-        inputs.turnCurrent = getTurnCurrent();
+        inputs.state = getState();
+        inputs.position = getPosition();
+
+        inputs.driveTemp = getDriveTemperature();
         inputs.turnTemp = getTurnTemperature();
-        inputs.turnVoltage = 0;
+
+        inputs.driveVoltage = getDriveVoltage();
+        inputs.turnVoltage = getTurnVoltage();
+
+        inputs.driveCurrent = getDriveCurrent();
+        inputs.turnCurrent = getTurnCurrent();
 
         Logger.processInputs(name, inputs);
     }
 
     /** Resets the angle of the relative encoder to 0. */
     public void resetAngle() {
-        turnEncoder.setPosition(0);
+        while (turnEncoder.setPosition(0) != REVLibError.kOk);
     }
 
     /**
@@ -124,7 +124,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
      * @param angle The angle as a Rotation2d.
      */
     public void setAngle(Rotation2d angle) {
-        turnController.setReference(angle.getRadians(), ControlType.kPosition);
+        while (turnController.setReference(angle.getRadians(), ControlType.kPosition) != REVLibError.kOk);
     }
 
     /**
@@ -132,7 +132,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
      * 
      * @return The speed in meters per second.
      */
-    public double getSpeed() {
+    public double getVelocity() {
         return driveEncoder.getVelocity();
     }
 
@@ -141,8 +141,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
      * 
      * @param speed The speed in meters per second.
      */
-    public void setSpeed(double speed) {
-        driveController.setReference(speed, ControlType.kVelocity);
+    public void setVelocity(double speed) {
+        while (driveController.setReference(speed, ControlType.kVelocity) != REVLibError.kOk);
     }
 
     /**
@@ -169,7 +169,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
      * @return The state as a SwerveModuleState.
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getSpeed(), getAngle());
+        return new SwerveModuleState(getVelocity(), getAngle());
     }
 
     /**
@@ -180,18 +180,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     public void setState(SwerveModuleState state) {
         SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getAngle());
 
-        setSpeed(optimizedState.speedMetersPerSecond);
+        setVelocity(optimizedState.speedMetersPerSecond);
         setAngle(optimizedState.angle);
-    }
-
-    @Override
-    public double getDriveCurrent() {
-        return driveMotor.getOutputCurrent();
-    }
-
-    @Override
-    public double getTurnCurrent() {
-        return turnMotor.getOutputCurrent();
     }
 
     @Override
@@ -202,5 +192,25 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     @Override
     public double getTurnTemperature() {
         return turnMotor.getMotorTemperature();
+    }
+
+    @Override
+    public double getDriveVoltage() {
+        return driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
+    }
+
+    @Override
+    public double getTurnVoltage() {
+        return turnMotor.getAppliedOutput() * turnMotor.getBusVoltage();
+    }
+
+    @Override
+    public double getDriveCurrent() {
+        return driveMotor.getOutputCurrent();
+    }
+
+    @Override
+    public double getTurnCurrent() {
+        return turnMotor.getOutputCurrent();
     }
 }
