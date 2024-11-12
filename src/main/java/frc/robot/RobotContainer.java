@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 import frc.robot.Drivetrain.SwerveModuleIOSim;
+import frc.robot.Drivetrain.SwerveModuleIOSparkMax;
 import frc.robot.Drivetrain.Commands.SwerveDrive;
 import frc.robot.Drivetrain.Commands.YouSpinMeRound;
 import frc.robot.Gyro.Gyro;
