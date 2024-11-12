@@ -56,10 +56,8 @@ public final class Constants {
         public static final double driveGearRatio = 5.36;
         public static final double turnGearRatio = 150.0 / 7.0;
 
-        public static final double drivePositionConversionFactor = wheelDiameter * Math.PI / driveGearRatio;
-        public static final double driveVelocityConversionFactor = drivePositionConversionFactor / 60;
+        public static final double driveRotToMeters = wheelDiameter * Math.PI / driveGearRatio; // met/rot
 
-        public static final double turnPositionConversionFactor = 2 * Math.PI / turnGearRatio;
-        public static final double turnVelocityConversionFactor = turnPositionConversionFactor / 60;
+        public static final double turnRotToRad = 2 * Math.PI / turnGearRatio; // rad/rot
     }
 }
