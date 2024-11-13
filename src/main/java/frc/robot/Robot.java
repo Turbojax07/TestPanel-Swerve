@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.GenericPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -13,8 +14,12 @@ import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PhysicalConstants;
+
 import java.nio.ByteBuffer;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -33,6 +38,7 @@ public class Robot extends LoggedRobot {
     private Command teleopCommand;
     private NetworkTable table;
     private GenericPublisher publisher;
+    FlywheelSim sim = new FlywheelSim(DCMotor.getNEO(1), PhysicalConstants.driveGearRatio, 0);
 
     /**
      * This function is run when the robot is first started up.
@@ -134,6 +140,8 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically while the robot is in Teleop mode. */
     @Override
     public void teleopPeriodic() {
+        table.putValue("Sim Output", sim.getAngularVelocityRPM());
+
         table.putValue("TestValue", NetworkTableValue.makeString("Testing!"));
         
         Pose2d pose = new Pose2d(0, 0, new Rotation2d());
