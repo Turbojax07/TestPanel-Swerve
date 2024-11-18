@@ -4,23 +4,8 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.networktables.GenericPublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableType;
-import edu.wpi.first.networktables.NetworkTableValue;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PhysicalConstants;
-
-import java.nio.ByteBuffer;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -36,9 +21,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private Command teleopCommand;
-    private NetworkTable table;
-    private GenericPublisher publisher;
-    FlywheelSim sim = new FlywheelSim(DCMotor.getNEO(1), PhysicalConstants.driveGearRatio, 0);
 
     /**
      * This function is run when the robot is first started up.
@@ -97,9 +79,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousInit() {
-        // if (autonomousCommand != null) {
-        //     autonomousCommand.schedule();
-        // }
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
+        }
     }
 
     /** This function is called periodically while the robot is in Autonomous mode. */
@@ -112,9 +94,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void autonomousExit() {
-        // if (autonomousCommand != null) {
-        //     autonomousCommand.cancel();
-        // }
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
     }
 
     /**
@@ -123,41 +105,14 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void teleopInit() {
-        // if (teleopCommand != null) {
-        //     teleopCommand.schedule();
-        // }
-
-        table = NetworkTableInstance.getDefault().getTable("Test");
-        NetworkTableType.getFromString("struct:Pose2d");
-
-        NetworkTablesJNI.publish(table.getTopic("Pose2").getHandle(), NetworkTableType.kRaw.getValue(), "struct:Pose2d", PubSubOption.sendAll(true));
-
-        // NetworkTableValue.makeBoolean(true)
-        table.putValue("Pose2d_Type_String", NetworkTableValue.makeString(Pose2d.struct.getTypeString()));
-        publisher = table.getTopic("Pose2").genericPublish(Pose2d.struct.getTypeString(), PubSubOption.sendAll(true));
+        if (teleopCommand != null) {
+            teleopCommand.schedule();
+        }
     }
 
     /** This function is called periodically while the robot is in Teleop mode. */
     @Override
-    public void teleopPeriodic() {
-        table.putValue("Sim Output", sim.getAngularVelocityRPM());
-
-        table.putValue("TestValue", NetworkTableValue.makeString("Testing!"));
-        
-        Pose2d pose = new Pose2d(0, 0, new Rotation2d());
-        
-
-        // Logger.recordOutput(null, new Mechanism2d(defaultPeriodSecs, defaultPeriodSecs));
-        
-        // Getting the byte buffer for a pose2d
-        ByteBuffer bb = ByteBuffer.allocate(Pose2d.struct.getSize());
-
-        // Packing the pose into the buffer
-        Pose2d.struct.pack(bb, pose);
-        publisher.setRaw(bb);
-
-        table.putValue("Pose", NetworkTableValue.makeRaw(bb.array()));
-    }
+    public void teleopPeriodic() {}
 
     /**
      * This function is called once each time the robot exits Teleop mode.<br>
@@ -165,9 +120,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void teleopExit() {
-        // if (teleopCommand != null) {
-        //     teleopCommand.cancel();
-        // }
+        if (teleopCommand != null) {
+            teleopCommand.cancel();
+        }
     }
 
     /** This function is called once each time the robot enters Test mode. */
