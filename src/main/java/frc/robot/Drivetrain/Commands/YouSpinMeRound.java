@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
 
+import static edu.wpi.first.units.Units.*;
+
 public class YouSpinMeRound extends Command {
     private Drivetrain drivetrain;
     private int direction;
@@ -19,7 +21,7 @@ public class YouSpinMeRound extends Command {
 
     @Override
     public void execute() {
-        drivetrain.drive(new ChassisSpeeds(0, 0, DriveConstants.maxTurnSpeed * direction));
+        drivetrain.drive(new ChassisSpeeds(0, 0, direction * DriveConstants.maxTurnSpeed.in(RadiansPerSecond)));
     }
 
     @Override

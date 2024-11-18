@@ -3,12 +3,13 @@ package frc.robot.Drivetrain.Commands;
 import java.util.function.Supplier;
 import frc.robot.Drivetrain.SwerveModuleIO;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Drivetrain.Drivetrain;
+
+import static edu.wpi.first.units.Units.*;
 
 public class SwerveDrive extends Command {
     private final Supplier<Double> x_trans;
@@ -24,7 +25,7 @@ public class SwerveDrive extends Command {
 
         this.drivetrain = Drivetrain.getInstance();
         for (SwerveModuleIO module : drivetrain.getModules()) {
-            module.setAngle(new Rotation2d());
+            module.resetAngle();
         }
 
         addRequirements(drivetrain);
@@ -46,22 +47,22 @@ public class SwerveDrive extends Command {
         SmartDashboard.putNumber("/Controller/RightX_Raw", zRotat);
 
         // Applying deadband and max speed to the xSpeed input
-        xSpeed = MathUtil.applyDeadband(-xSpeed, DriveConstants.deadband);
-        if (xSpeed > 0) xSpeed -= DriveConstants.deadband;
-        if (xSpeed < 0) xSpeed += DriveConstants.deadband;
-        xSpeed *= DriveConstants.maxDriveSpeed;
+        xSpeed = MathUtil.applyDeadband(-xSpeed, DriveConstants.deadband.in(Percent));
+        if (xSpeed > 0) xSpeed -= DriveConstants.deadband.in(Percent);
+        if (xSpeed < 0) xSpeed += DriveConstants.deadband.in(Percent);
+        xSpeed *= DriveConstants.maxDriveSpeed.in(MetersPerSecond);
 
         // Applying deadband and max speed to the ySpeed input
-        ySpeed = MathUtil.applyDeadband(-ySpeed, DriveConstants.deadband);
-        if (ySpeed > 0) ySpeed -= DriveConstants.deadband;
-        if (ySpeed < 0) ySpeed += DriveConstants.deadband;
-        ySpeed *= DriveConstants.maxDriveSpeed;
+        ySpeed = MathUtil.applyDeadband(-ySpeed, DriveConstants.deadband.in(Percent));
+        if (ySpeed > 0) ySpeed -= DriveConstants.deadband.in(Percent);
+        if (ySpeed < 0) ySpeed += DriveConstants.deadband.in(Percent);
+        ySpeed *= DriveConstants.maxDriveSpeed.in(MetersPerSecond);
 
         // Applying deadband and max speed to the zRotat input
-        zRotat = MathUtil.applyDeadband(-zRotat, DriveConstants.deadband);
-        if (zRotat > 0) zRotat -= DriveConstants.deadband;
-        if (zRotat < 0) zRotat += DriveConstants.deadband;
-        zRotat *= DriveConstants.maxTurnSpeed;
+        zRotat = MathUtil.applyDeadband(-zRotat, DriveConstants.deadband.in(Percent));
+        if (zRotat > 0) zRotat -= DriveConstants.deadband.in(Percent);
+        if (zRotat < 0) zRotat += DriveConstants.deadband.in(Percent);
+        zRotat *= DriveConstants.maxTurnSpeed.in(RadiansPerSecond);
 
         // Outputting the adjusted controller values to SmartDashboard
         SmartDashboard.putNumber("/Controller/LeftX_Adjusted", xSpeed);
