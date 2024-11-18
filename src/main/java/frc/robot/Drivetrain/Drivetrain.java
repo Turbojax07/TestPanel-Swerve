@@ -1,9 +1,10 @@
 package frc.robot.Drivetrain;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.ReplanningConfig;
-
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -12,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -20,6 +22,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
 import frc.robot.Gyro.Gyro;
+import java.util.function.BooleanSupplier;
+
+import static edu.wpi.first.units.Units.*;
 
 public class Drivetrain extends SubsystemBase {
     private SwerveModuleIO flModuleIO;
@@ -37,10 +42,10 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModulePosition[] positions = new SwerveModulePosition[4];
 
     private SwerveModuleState[] xStates = new SwerveModuleState[] {
-            new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0)),
-            new SwerveModuleState(0, new Rotation2d(      Math.PI / 4.0)),
-            new SwerveModuleState(0, new Rotation2d(      Math.PI / 4.0)),
-            new SwerveModuleState(0, new Rotation2d(3.0 * Math.PI / 4.0)),
+            new SwerveModuleState(MetersPerSecond.of(0), new Rotation2d(3.0 * Math.PI / 4.0)),
+            new SwerveModuleState(MetersPerSecond.of(0), new Rotation2d(      Math.PI / 4.0)),
+            new SwerveModuleState(MetersPerSecond.of(0), new Rotation2d(      Math.PI / 4.0)),
+            new SwerveModuleState(MetersPerSecond.of(0), new Rotation2d(3.0 * Math.PI / 4.0)),
     };
 
     private SwerveDriveOdometry odometry;
@@ -78,29 +83,43 @@ public class Drivetrain extends SubsystemBase {
         
         modules = new SwerveModuleIO[] { flModuleIO, frModuleIO, blModuleIO, brModuleIO};
         kinematics = new SwerveDriveKinematics(
-                new Translation2d(/* FL */-PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
-                new Translation2d(/* FR */ PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
-                new Translation2d(/* BL */-PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0),
-                new Translation2d(/* BR */ PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0));
+            /* FL */ new Translation2d(PhysicalConstants.width.divide(-2), PhysicalConstants.length.divide( 2)),
+            /* FR */ new Translation2d(PhysicalConstants.width.divide( 2), PhysicalConstants.length.divide( 2)),
+            /* BL */ new Translation2d(PhysicalConstants.width.divide(-2), PhysicalConstants.length.divide(-2)),
+            /* BR */ new Translation2d(PhysicalConstants.width.divide( 2), PhysicalConstants.length.divide(-2)));
 
         gyro = Gyro.getInstance();
         gyro.resetConfigs();
         gyro.setAngle(new Rotation2d());
 
         for (int i = 0; i < modules.length; i++) {
-            positions[i] = modules[i].getPosition();
             states[i] = modules[i].getState();
+            positions[i] = modules[i].getPosition();
         }
 
         odometry = new SwerveDriveOdometry(kinematics, gyro.getAngle(), positions);
 
-        AutoBuilder.configureHolonomic(
+        AutoBuilder.configure(
                 this::getPose,
                 this::setPose,
                 this::getSpeeds,
                 this::drive,
-                new HolonomicPathFollowerConfig(DriveConstants.maxDriveSpeed, PhysicalConstants.robotWidth / 2.0, new ReplanningConfig()),
-                () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
+                new PPHolonomicDriveController(
+                    new PIDConstants(DriveConstants.driveP, DriveConstants.driveI, DriveConstants.driveD),
+                    new PIDConstants(DriveConstants.steerP, DriveConstants.steerP, DriveConstants.steerP)
+                ),
+                new RobotConfig(
+                    PhysicalConstants.mass,
+                    PhysicalConstants.inertia,
+                    new ModuleConfig(PhysicalConstants.wheelRadius, DriveConstants.maxDriveSpeed, getDriveCurrent(), DCMotor.getNEO(1), DriveConstants.driveCurrentLimit, 2),
+                    PhysicalConstants.width
+                ),
+                new BooleanSupplier() {
+                    @Override
+                    public boolean getAsBoolean() {
+                        return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red);
+                    }
+                },
                 this);
     }
 
@@ -152,7 +171,7 @@ public class Drivetrain extends SubsystemBase {
     public double getDriveCurrent() {
         int sum = 0;
         for (SwerveModuleIO m : modules) {
-            sum += m.getDriveCurrent();
+            sum += m.getDriveCurrent().in(Amps);
         }
         return sum;
     }
@@ -203,7 +222,7 @@ public class Drivetrain extends SubsystemBase {
     public double getTurnCurrent() {
         int sum = 0;
         for (SwerveModuleIO m : modules) {
-            sum += m.getTurnCurrent();
+            sum += m.getSteerCurrent().in(Amps);
         }
         return sum;
     }
