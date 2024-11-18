@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.Logger;
 
 public class GyroIOSim implements GyroIO {
-    private GyroIOInputsAutoLogged inputs;
+    private GyroIOInputs inputs;
 
     @Override
     public void updateInputs() {

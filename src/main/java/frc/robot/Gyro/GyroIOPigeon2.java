@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger;
 public class GyroIOPigeon2 implements GyroIO {
     private Pigeon2 gyro;
 
-    private GyroIOInputsAutoLogged inputs;
+    private GyroIOInputs inputs;
 
     public GyroIOPigeon2(int gyroId) {
         gyro = new Pigeon2(gyroId);
