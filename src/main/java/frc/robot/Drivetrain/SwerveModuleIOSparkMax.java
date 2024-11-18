@@ -1,216 +1,314 @@
 package frc.robot.Drivetrain;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.ClosedLoopSlot;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.*;
+
 public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private String name;
 
-    private CANSparkMax driveMotor;
+    private SparkMax driveMotor;
     private RelativeEncoder driveEncoder;
-    private SparkPIDController driveController;
+    private SparkClosedLoopController driveController;
 
-    private CANSparkMax turnMotor;
-    private RelativeEncoder turnEncoder;
-    private SparkPIDController turnController;
+    private SparkMax steerMotor;
+    private RelativeEncoder steerEncoder;
+    private SparkClosedLoopController steerController;
 
     private AnalogEncoder absEncoder;
 
-    private SwerveModuleIOInputsAutoLogged inputs;
+    private SwerveModuleIOInputs inputs;
 
-    public SwerveModuleIOSparkMax(String name, int driveId, int turnId, int encoderId, double encoderOffset) {
+    public SwerveModuleIOSparkMax(String name, int driveId, int steerId, int encoderId, Angle encoderOffset) {
         this.name = name;
 
+        // Getting the drive motor
+        driveMotor = new SparkMax(driveId, MotorType.kBrushless);
+
+        // Getting the drive encoder
+        driveEncoder = driveMotor.getEncoder();
+
+        // Making a configuration for the drive motor.
+        SparkMaxConfig driveConfig = new SparkMaxConfig();
+
         // Configuring the drive motor
-        driveMotor = new CANSparkMax(driveId, MotorType.kBrushless);
-        while (driveMotor.restoreFactoryDefaults() != REVLibError.kOk);
-        while (driveMotor.setSmartCurrentLimit(60) != REVLibError.kOk);
-        driveMotor.setInverted(true);
-        while (driveMotor.setIdleMode(IdleMode.kCoast) != REVLibError.kOk);
+        driveConfig.apply(
+            driveConfig.smartCurrentLimit((int) DriveConstants.driveCurrentLimit.in(Amps))
+                .inverted(true)
+                .idleMode(IdleMode.kCoast));
+
+        // Configuring the drive PID loop
+        driveConfig.closedLoop.apply(
+            driveConfig.closedLoop.pidf(
+                DriveConstants.driveP,
+                DriveConstants.driveI,
+                DriveConstants.driveD,
+                DriveConstants.driveFF,
+                ClosedLoopSlot.kSlot0));
 
         // Configuring the drive encoder
-        driveEncoder = driveMotor.getEncoder();
-        while (driveEncoder.setPositionConversionFactor(PhysicalConstants.driveRotToMeters) != REVLibError.kOk);
-        while (driveEncoder.setVelocityConversionFactor(PhysicalConstants.driveRotToMeters / 60) != REVLibError.kOk);
+        driveConfig.encoder.apply(
+            driveConfig.encoder.positionConversionFactor(PhysicalConstants.driveRotToMeters)
+                .velocityConversionFactor(PhysicalConstants.driveRotToMeters / 60.0));
+        
+        // Applying the configurations
+        driveMotor.configure(driveConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        // Configuring the drive PID controller
-        driveController = driveMotor.getPIDController();
-        while (driveController.setP(DriveConstants.driveP) != REVLibError.kOk);
-        while (driveController.setI(DriveConstants.driveI) != REVLibError.kOk);
-        while (driveController.setD(DriveConstants.driveD) != REVLibError.kOk);
-        while (driveController.setFF(DriveConstants.driveFF) != REVLibError.kOk);
 
-        // Saving configs for the drive motor
-        while (driveMotor.burnFlash() != REVLibError.kOk);
+        // Getting the steer motor
+        steerMotor = new SparkMax(steerId, MotorType.kBrushless);
 
-        // Configuring the turn motor
-        turnMotor = new CANSparkMax(turnId, MotorType.kBrushless);
-        while (turnMotor.restoreFactoryDefaults() != REVLibError.kOk);
-        while (turnMotor.setSmartCurrentLimit(35) != REVLibError.kOk);
-        turnMotor.setInverted(false);
-        while (turnMotor.setIdleMode(IdleMode.kCoast) != REVLibError.kOk);
+        // Getting the steer encoder
+        steerEncoder = steerMotor.getEncoder();
 
-        // Configuring the turn encoder
-        turnEncoder = turnMotor.getEncoder();
-        while (turnEncoder.setPositionConversionFactor(PhysicalConstants.turnRotToRad) != REVLibError.kOk);
-        while (turnEncoder.setVelocityConversionFactor(PhysicalConstants.turnRotToRad / 60) != REVLibError.kOk);
+        // Getting the steer controller
+        steerController = steerMotor.getClosedLoopController();
 
-        // Confuguring the turn PID controller
-        turnController = turnMotor.getPIDController();
-        while (turnController.setP(DriveConstants.turnP) != REVLibError.kOk);
-        while (turnController.setI(DriveConstants.turnI) != REVLibError.kOk);
-        while (turnController.setD(DriveConstants.turnD) != REVLibError.kOk);
-        while (turnController.setFF(DriveConstants.turnFF) != REVLibError.kOk);
+        // Making a configuration for the steer motor.
+        SparkMaxConfig steerConfig = new SparkMaxConfig();
 
-        // Saving configs for the turn motor
-        while (turnMotor.burnFlash() != REVLibError.kOk);
+        // Configuring the steer motor
+        steerConfig.apply(
+            steerConfig.smartCurrentLimit((int) DriveConstants.steerCurrentLimit.in(Amps))
+                .inverted(false)
+                .idleMode(IdleMode.kCoast));
+
+        // Configuring the steer PID loop
+        steerConfig.closedLoop.apply(
+            steerConfig.closedLoop.pidf(
+                DriveConstants.steerP,
+                DriveConstants.steerI,
+                DriveConstants.steerD,
+                DriveConstants.steerFF,
+                ClosedLoopSlot.kSlot0));
+
+        // Configuring the steer encoder
+        steerConfig.encoder.apply(
+            steerConfig.encoder.positionConversionFactor(PhysicalConstants.steerRotToRad)
+                .velocityConversionFactor(PhysicalConstants.steerRotToRad / 60));
+        
+        // Applying the configurations
+        steerMotor.configure(steerConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
 
         // Initializing the analog encoder
         absEncoder = new AnalogEncoder(encoderId);
 
-        // Setting the turn encoder's position to one in this range.
-        while (turnEncoder.setPosition((absEncoder.get() - encoderOffset) * Math.PI * 2) != REVLibError.kOk);
+        // Setting the steer encoder's position to one in this range.
+        while (steerEncoder.setPosition((absEncoder.get() - encoderOffset.in(Rotations)) * Math.PI * 2) != REVLibError.kOk);
 
-        inputs = new SwerveModuleIOInputsAutoLogged();
+        inputs = new SwerveModuleIOInputs();
     }
 
-    /** Updates the logged values.  Should be used in the periodic function. */
-    @Override
+    /** Updates the IO inputs for them to be pushed to NetworkTables. */
     public void updateInputs() {
         inputs.state = getState();
         inputs.position = getPosition();
 
         inputs.driveTemp = getDriveTemperature();
-        inputs.turnTemp = getTurnTemperature();
-
         inputs.driveVoltage = getDriveVoltage();
-        inputs.turnVoltage = getTurnVoltage();
-
         inputs.driveCurrent = getDriveCurrent();
-        inputs.turnCurrent = getTurnCurrent();
+
+        inputs.steerTemp = getSteerTemperature();
+        inputs.steerVoltage = getSteerVoltage();
+        inputs.steerCurrent = getSteerCurrent();
 
         Logger.processInputs(name, inputs);
     }
 
-    /** Resets the angle of the relative encoder to 0. */
-    public void resetAngle() {
-        while (turnEncoder.setPosition(0) != REVLibError.kOk);
-    }
-
     /**
-     * Gets the angle of the swerve module.
+     * Returns the current state of the swerve module.
      * 
-     * @return The angle as a Rotation2d.
-     */
-    public Rotation2d getAngle() {
-        return new Rotation2d(turnEncoder.getPosition());
-    }
-
-    /**
-     * Sets the angle of the swerve module using closed-loop control.
-     * 
-     * @param angle The angle as a Rotation2d.
-     */
-    public void setAngle(Rotation2d angle) {
-        while (turnController.setReference(angle.getRadians(), ControlType.kPosition) != REVLibError.kOk);
-    }
-
-    /**
-     * Gets the speed of the swerve module.
-     * 
-     * @return The speed in meters per second.
-     */
-    public double getVelocity() {
-        return driveEncoder.getVelocity();
-    }
-
-    /**
-     * Sets the speed of the swerve module.
-     * 
-     * @param speed The speed in meters per second.
-     */
-    public void setVelocity(double speed) {
-        while (driveController.setReference(speed, ControlType.kVelocity) != REVLibError.kOk);
-    }
-
-    /**
-     * Gets the distance of the swerve module.
-     * 
-     * @return The distance in meters.
-     */
-    public double getDistance() {
-        return driveEncoder.getPosition();
-    }
-
-    /**
-     * Gets the position of the swerve module.
-     * 
-     * @return The position as a SwerveModulePosition.
-     */
-    public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(getDistance(), getAngle());
-    }
-
-    /**
-     * Gets the state of the swerve module.
-     * 
-     * @return The state as a SwerveModuleState.
+     * @return The current state of the swerve module.
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getVelocity(), getAngle());
+        return new SwerveModuleState(getVelocity(), new Rotation2d(getAngle()));
     }
 
     /**
      * Sets the state of the swerve module.
      * 
-     * @param state The state as a SwerveModuleState.
+     * @param state The new state of the swerve module.
      */
     public void setState(SwerveModuleState state) {
-        SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getAngle());
+        state.optimize(new Rotation2d(getAngle()));
 
-        setVelocity(optimizedState.speedMetersPerSecond);
-        setAngle(optimizedState.angle);
+        setVelocity(MetersPerSecond.of(state.speedMetersPerSecond));
+        setAngle(state.angle.getMeasure());
     }
 
-    @Override
-    public double getDriveTemperature() {
-        return driveMotor.getMotorTemperature();
+    /**
+     * Returns the current position of the swerve module.
+     * 
+     * @return The current position of the swerve module.
+     */
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(getDistance(), new Rotation2d(getAngle()));
     }
 
-    @Override
-    public double getTurnTemperature() {
-        return turnMotor.getMotorTemperature();
+    /** Resets the position of the swerve module to a new instance of {@link SwerveModulePosition}. */
+    public void resetPosition() {
+        resetDistance();
+        resetAngle();
     }
 
-    @Override
-    public double getDriveVoltage() {
-        return driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
+    /**
+     * Resets the position of the swerve module to the value defined in the position parameter.
+     * 
+     * @param position The new position of the swerve module.
+     */
+    public void resetPosition(SwerveModulePosition position) {
+        resetDistance(Meters.of(position.distanceMeters));
+        resetAngle(position.angle.getMeasure());
     }
 
-    @Override
-    public double getTurnVoltage() {
-        return turnMotor.getAppliedOutput() * turnMotor.getBusVoltage();
+    /**
+     * Returns the current distance the swerve module has traveled.
+     * 
+     * @return The current distance the swerve module has traveled as a {@link Distance}.
+     */
+    public Distance getDistance() {
+        return Meters.of(driveEncoder.getPosition());
     }
 
-    @Override
-    public double getDriveCurrent() {
-        return driveMotor.getOutputCurrent();
+    /** Resets the distance of the swerve module to 0. */
+    public void resetDistance() {
+        driveEncoder.setPosition(0);
     }
 
-    @Override
-    public double getTurnCurrent() {
-        return turnMotor.getOutputCurrent();
+    /**
+     * Resets the distance of the swerve module to the value defined in the distance parameter.
+     * 
+     * @param distance The new distance of the swerve module as a {@link Distance}.
+     */
+    public void resetDistance(Distance distance) {
+        driveEncoder.setPosition(distance.in(Meters) / PhysicalConstants.driveRotToMeters);
+    }
+
+    /**
+     * Returns the current angle of the swerve module.
+     * 
+     * @return The current angle of the swerve module.
+     */
+    public Angle getAngle() {
+        return Radians.of(steerEncoder.getPosition());
+    }
+
+    /**
+     * Sets the angle of the swerve module.
+     * 
+     * @param angle The new desired angle of the swerve module.
+     */
+    public void setAngle(Angle angle) {
+        steerController.setReference(angle.in(Radians), ControlType.kPosition);
+    }
+
+    /** Resets the angle of the swerve module to 0. */
+    public void resetAngle() {
+        steerEncoder.setPosition(0);
+    }
+
+    /**
+     * Resets the angle of the swerve module to the value defined in the angle parameter.
+     * 
+     * @param angle The new angle of the swerve module as a {@link Angle}.
+     */
+    public void resetAngle(Angle angle) {
+        steerEncoder.setPosition(angle.in(Radians));
+    }
+
+    /**
+     * Returns the current velocity of the swerve module.
+     * 
+     * @return The current velocity of the swerve module.
+     */
+    public LinearVelocity getVelocity() {
+        return MetersPerSecond.of(driveEncoder.getVelocity());
+    }
+
+    /**
+     * Sets the velocity of the swerve module.
+     * 
+     * @param velocity the new desired velocity of the swerve module.
+     */
+    public void setVelocity(LinearVelocity velocity) {
+        driveController.setReference(velocity.in(MetersPerSecond), ControlType.kVelocity);
+    }
+
+    /**
+     * Returns the current temperature of the drive motor.
+     * 
+     * @return The current temperature of the drive motor.
+     */
+    public Temperature getDriveTemperature() {
+        return Celsius.of(driveMotor.getMotorTemperature());
+    }
+
+    /**
+     * Returns the current voltage of the drive motor.
+     * 
+     * @return The current voltage of the drive motor.
+     */
+    public Voltage getDriveVoltage() {
+        return Volts.of(driveMotor.getAppliedOutput() * driveMotor.getBusVoltage());
+    }
+
+    /**
+     * Returns the current of the drive motor.
+     * 
+     * @return The current of the drive motor.
+     */
+    public Current getDriveCurrent() {
+        return Amps.of(driveMotor.getOutputCurrent());
+    }
+
+    /**
+     * Returns the current temperature of the steer motor.
+     * 
+     * @return The current temperature of the steer motor.
+     */
+    public Temperature getSteerTemperature() {
+        return Celsius.of(steerMotor.getMotorTemperature());
+    }
+
+    /**
+     * Returns the current voltage of the steer motor.
+     * 
+     * @return The current voltage of the steer motor.
+     */
+    public Voltage getSteerVoltage() {
+        return Volts.of(steerMotor.getAppliedOutput() * steerMotor.getBusVoltage());
+    }
+
+    /**
+     * Returns the current of the steer motor.
+     * 
+     * @return The current of the steer motor.
+     */
+    public Current getSteerCurrent() {
+        return Amps.of(steerMotor.getOutputCurrent());
     }
 }
