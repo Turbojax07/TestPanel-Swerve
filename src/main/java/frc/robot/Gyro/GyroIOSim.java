@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class GyroIOSim implements GyroIO {
     private GyroIOInputsAutoLogged inputs;
+    private Rotation2d angle;
 
     public GyroIOSim() {
         inputs = new GyroIOInputsAutoLogged();
@@ -18,21 +19,15 @@ public class GyroIOSim implements GyroIO {
     }
 
     @Override
-    public void resetConfigs() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'resetConfigs'");
-    }
+    public void resetConfigs() {}
 
     @Override
     public Rotation2d getRotation2d() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRotation2d'");
+        return angle;
     }
 
     @Override
     public void setRotation2d(Rotation2d angle) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setRotation2d'");
+        this.angle = angle;
     }
-    
 }
