@@ -26,8 +26,8 @@ public interface SwerveModuleIO {
 
         @Override
         public void toLog(LogTable table) {
-            table.put(       "State",        state);
-            table.put(    "Position",     position);
+            table.put(   "State",    state);
+            table.put("Position", position);
             
             table.put(   "DriveTemp",    driveTemp);
             table.put("DriveVoltage", driveVoltage);
@@ -40,8 +40,8 @@ public interface SwerveModuleIO {
 
         @Override
         public void fromLog(LogTable table) {
-            state        = table.get(       "State",        state);
-            position     = table.get(    "Position",     position);
+            state        = table.get(   "State",    state);
+            position     = table.get("Position", position);
 
             driveTemp    = table.get(   "DriveTemp",    driveTemp);
             driveVoltage = table.get("DriveVoltage", driveVoltage);
