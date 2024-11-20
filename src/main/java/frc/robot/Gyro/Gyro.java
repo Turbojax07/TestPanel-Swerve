@@ -11,8 +11,12 @@ public class Gyro extends SubsystemBase {
 
     public static Gyro getInstance() {
         if (instance == null) {
+            // The default instance is a sim instance.
+            // This will help prevent errors.
+
             SmartDashboard.putString("/GYROERROR", "Drivetrain using default instance.");
-            instance = new Gyro(null);
+
+            instance = new Gyro(new GyroIOSim());
         }
 
         return instance;

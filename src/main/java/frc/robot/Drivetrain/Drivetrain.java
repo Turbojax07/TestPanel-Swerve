@@ -49,8 +49,16 @@ public class Drivetrain extends SubsystemBase {
 
     public static Drivetrain getInstance() {
         if (instance == null) {
+            // The default instance is a sim instance.
+            // This will help prevent errors.
+            
             SmartDashboard.putString("/DRIVETRAINERROR", "Drivetrain using default instance.");
-            instance = new Drivetrain(null, null, null, null);
+
+            instance = new Drivetrain(
+                new SwerveModuleIOSim("fl", DriveConstants.flDriveId, DriveConstants.frSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
+                new SwerveModuleIOSim("fr", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
+                new SwerveModuleIOSim("bl", DriveConstants.blDriveId, DriveConstants.brSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
+                new SwerveModuleIOSim("br", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
         }
 
         return instance;
