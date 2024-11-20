@@ -62,7 +62,8 @@ public final class Constants {
 
     public static class PhysicalConstants {
         public static final Mass mass = Pounds.of(50); // IDK the weight
-        public static final MomentOfInertia inertia = KilogramSquareMeters.of(50); // IDK the inertia
+        public static final MomentOfInertia momentOfInertia = KilogramSquareMeters.of(50); // IDK the inertia
+        public static final double frictionCoeff = 1.0;
         public static final Distance width = Meters.of(Inches.of(10).in(Meters));
         public static final Distance length = Meters.of(Inches.of(10).in(Meters));
         public static final Distance wheelRadius = Meters.of(Inches.of(2).in(Meters));

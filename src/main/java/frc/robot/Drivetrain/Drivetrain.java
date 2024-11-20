@@ -110,8 +110,8 @@ public class Drivetrain extends SubsystemBase {
                 ),
                 new RobotConfig(
                     PhysicalConstants.mass,
-                    PhysicalConstants.inertia,
-                    new ModuleConfig(PhysicalConstants.wheelRadius, DriveConstants.maxDriveSpeed, getDriveCurrent(), DCMotor.getNEO(1), DriveConstants.driveCurrentLimit, 2),
+                    PhysicalConstants.momentOfInertia,
+                    new ModuleConfig(PhysicalConstants.wheelRadius, DriveConstants.maxDriveSpeed, PhysicalConstants.frictionCoeff, DCMotor.getNEO(1), DriveConstants.driveCurrentLimit, 1),
                     PhysicalConstants.width
                 ),
                 new BooleanSupplier() {
