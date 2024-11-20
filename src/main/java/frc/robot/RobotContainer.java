@@ -34,10 +34,10 @@ public class RobotContainer {
 
         Gyro.getInstance(new GyroIOPigeon2(DriveConstants.gyroId));
         Drivetrain.getInstance(
-            new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flTurnId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
-            new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blTurnId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
-            new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frTurnId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
-            new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brTurnId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
+            new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
+            new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
+            new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
+            new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
 
         // Configure the trigger bindings
         configureBindings();

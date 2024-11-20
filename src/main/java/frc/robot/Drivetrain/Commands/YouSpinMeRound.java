@@ -19,7 +19,7 @@ public class YouSpinMeRound extends Command {
 
     @Override
     public void execute() {
-        drivetrain.drive(new ChassisSpeeds(0, 0, DriveConstants.maxTurnSpeed * direction));
+        drivetrain.drive(new ChassisSpeeds(0, 0, DriveConstants.maxSteerSpeed * direction));
     }
 
     @Override

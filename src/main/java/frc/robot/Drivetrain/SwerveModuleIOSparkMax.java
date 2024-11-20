@@ -64,15 +64,15 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
         // Configuring the turn encoder
         turnEncoder = turnMotor.getEncoder();
-        while (turnEncoder.setPositionConversionFactor(PhysicalConstants.turnRotToRad) != REVLibError.kOk);
-        while (turnEncoder.setVelocityConversionFactor(PhysicalConstants.turnRotToRad / 60) != REVLibError.kOk);
+        while (turnEncoder.setPositionConversionFactor(PhysicalConstants.steerRotToRad) != REVLibError.kOk);
+        while (turnEncoder.setVelocityConversionFactor(PhysicalConstants.steerRotToRad / 60) != REVLibError.kOk);
 
         // Confuguring the turn PID controller
         turnController = turnMotor.getPIDController();
-        while (turnController.setP(DriveConstants.turnP) != REVLibError.kOk);
-        while (turnController.setI(DriveConstants.turnI) != REVLibError.kOk);
-        while (turnController.setD(DriveConstants.turnD) != REVLibError.kOk);
-        while (turnController.setFF(DriveConstants.turnFF) != REVLibError.kOk);
+        while (turnController.setP(DriveConstants.steerP) != REVLibError.kOk);
+        while (turnController.setI(DriveConstants.steerI) != REVLibError.kOk);
+        while (turnController.setD(DriveConstants.steerD) != REVLibError.kOk);
+        while (turnController.setFF(DriveConstants.steerFF) != REVLibError.kOk);
 
         // Saving configs for the turn motor
         while (turnMotor.burnFlash() != REVLibError.kOk);
