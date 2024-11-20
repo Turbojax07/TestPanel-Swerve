@@ -12,6 +12,8 @@ public class GyroIOPigeon2 implements GyroIO {
 
     public GyroIOPigeon2(int gyroId) {
         gyro = new Pigeon2(gyroId);
+
+        inputs = new GyroIOInputsAutoLogged();
     }
 
     @Override

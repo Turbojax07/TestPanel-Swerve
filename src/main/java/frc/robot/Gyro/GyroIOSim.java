@@ -6,6 +6,10 @@ import org.littletonrobotics.junction.Logger;
 public class GyroIOSim implements GyroIO {
     private GyroIOInputsAutoLogged inputs;
 
+    public GyroIOSim() {
+        inputs = new GyroIOInputsAutoLogged();
+    }
+
     @Override
     public void updateInputs() {
         inputs.angle = getRotation2d();
