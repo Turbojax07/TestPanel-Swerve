@@ -17,6 +17,7 @@ import frc.robot.Drivetrain.Commands.SwerveDrive;
 import frc.robot.Drivetrain.Commands.YouSpinMeRound;
 import frc.robot.Gyro.Gyro;
 import frc.robot.Gyro.GyroIOPigeon2;
+import frc.robot.Gyro.GyroIOSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -28,16 +29,25 @@ public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
-    public RobotContainer() {
+    public RobotContainer(boolean isReal) {
         // Initializing subsystems
         // Gyro needs to be initialized before Drivetrain or else it won't get the correct gyro.
 
-        Gyro.getInstance(new GyroIOPigeon2(DriveConstants.gyroId));
-        Drivetrain.getInstance(
-            new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
-            new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
-            new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
-            new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
+        if (isReal) {
+            Gyro.getInstance(new GyroIOPigeon2(DriveConstants.gyroId));
+            Drivetrain.getInstance(
+                new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
+                new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
+                new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
+                new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
+        } else {
+            Gyro.getInstance(new GyroIOSim());
+            Drivetrain.getInstance(
+                new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
+                new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
+                new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
+                new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
+        }
 
         // Configure the trigger bindings
         configureBindings();

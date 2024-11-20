@@ -51,7 +51,7 @@ public class Robot extends LoggedRobot {
             Logger.setReplaySource(new WPILOGReader("log.wpilog"));
         }
 
-        RobotContainer robotContainer = new RobotContainer();
+        RobotContainer robotContainer = new RobotContainer(isReal());
 
         autonomousCommand = robotContainer.getAutonomousCommand();
         teleopCommand = robotContainer.getTeleopCommand();
