@@ -1,5 +1,7 @@
 package frc.robot.Drivetrain;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -131,6 +133,9 @@ public class Drivetrain extends SubsystemBase {
         frModuleIO.updateInputs();
         blModuleIO.updateInputs();
         brModuleIO.updateInputs();
+
+        Logger.recordOutput("States", states);
+        Logger.recordOutput("RobotPose", getPose());
     }
 
     /**
