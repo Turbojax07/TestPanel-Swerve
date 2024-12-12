@@ -26,7 +26,6 @@ public class Gyro extends SubsystemBase {
         // Replaces the instance variable if instance doesn't exist, or if the IO classes are different.
         if (instance == null ||
             !instance.gyroIO.getClass().equals(gyroIO.getClass())) {
-
             instance = new Gyro(gyroIO);
         }
 
@@ -36,9 +35,17 @@ public class Gyro extends SubsystemBase {
     public Gyro(GyroIO gyroIO) {
         this.gyroIO = gyroIO;
 
-        gyroIO.resetConfigs();
+        resetConfigs();
 
-        gyroIO.setRotation2d(new Rotation2d());
+        setAngle(new Rotation2d());
+    }
+
+    /**
+     * Updates swerve module positions and odometry
+     * Publishes telemetry
+     */
+    public void periodic() {
+        gyroIO.updateInputs();
     }
 
     /**
@@ -48,14 +55,6 @@ public class Gyro extends SubsystemBase {
      */
     public void resetConfigs() {
         gyroIO.resetConfigs();
-    }
-
-    /**
-     * Updates swerve module positions and odometry
-     * Publishes telemetry
-     */
-    public void periodic() {
-        gyroIO.updateInputs();
     }
 
     /**
