@@ -69,7 +69,7 @@ public class SwerveDrive extends Command {
         SmartDashboard.putNumber("/Controller/RightX_Adjusted", zRotat);
 
         // Creating the ChassisSpeeds object.
-        ChassisSpeeds speeds = new ChassisSpeeds(xSpeed, ySpeed, zRotat);
+        ChassisSpeeds speeds = new ChassisSpeeds(ySpeed, xSpeed, zRotat);
 
         // Driving the robot
         drivetrain.drive(speeds);
