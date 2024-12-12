@@ -36,17 +36,17 @@ public class RobotContainer {
         if (isReal) {
             Gyro.getInstance(new GyroIOPigeon2(DriveConstants.gyroId));
             Drivetrain.getInstance(
-                new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
-                new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
-                new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
-                new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
+                new SwerveModuleIOSparkMax("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flOffsetRot),
+                new SwerveModuleIOSparkMax("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blOffsetRot),
+                new SwerveModuleIOSparkMax("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frOffsetRot),
+                new SwerveModuleIOSparkMax("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brOffsetRot));
         } else {
             Gyro.getInstance(new GyroIOSim());
             Drivetrain.getInstance(
-                new SwerveModuleIOSim("FLModule", DriveConstants.flDriveId, DriveConstants.flSteerId, DriveConstants.flEncoderId, DriveConstants.flEncoderOffset),
-                new SwerveModuleIOSim("BLModule", DriveConstants.blDriveId, DriveConstants.blSteerId, DriveConstants.blEncoderId, DriveConstants.blEncoderOffset),
-                new SwerveModuleIOSim("FRModule", DriveConstants.frDriveId, DriveConstants.frSteerId, DriveConstants.frEncoderId, DriveConstants.frEncoderOffset),
-                new SwerveModuleIOSim("BRModule", DriveConstants.brDriveId, DriveConstants.brSteerId, DriveConstants.brEncoderId, DriveConstants.brEncoderOffset));
+                new SwerveModuleIOSim("FLModule"),
+                new SwerveModuleIOSim("BLModule"),
+                new SwerveModuleIOSim("FRModule"),
+                new SwerveModuleIOSim("BRModule"));
         }
 
         // Configure the trigger bindings

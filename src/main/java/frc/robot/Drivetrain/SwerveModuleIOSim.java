@@ -5,8 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PhysicalConstants;
 import org.littletonrobotics.junction.Logger;
@@ -14,37 +13,42 @@ import org.littletonrobotics.junction.Logger;
 public class SwerveModuleIOSim implements SwerveModuleIO {
     private String name;
 
-    private DCMotorSim driveSim;
-    private DCMotorSim steerSim;
+    private FlywheelSim driveSim;
+    private FlywheelSim steerSim;
 
     private PIDController driveController;
     private PIDController steerController;
 
     private SwerveModuleIOInputsAutoLogged inputs;
 
-    public SwerveModuleIOSim(String name, int driveId, int steerId, int encoderId, double encoderOffset) {
+    private double driveVoltage;
+    private double steerVoltage;
+
+    public SwerveModuleIOSim(String name) {
         this.name = name;
 
         // Initializing the motors
-        driveSim = new DCMotorSim(DCMotor.getNEO(1), PhysicalConstants.driveGearRatio, DriveConstants.driveMOI);
-        steerSim = new DCMotorSim(DCMotor.getNEO(1), PhysicalConstants.steerGearRatio, DriveConstants.steerMOI);
+        driveSim = new FlywheelSim(DCMotor.getNEO(1), PhysicalConstants.driveGearRatio, DriveConstants.driveMOI);
+        steerSim = new FlywheelSim(DCMotor.getNEO(1), PhysicalConstants.steerGearRatio, DriveConstants.steerMOI);
 
         // Initializing the PID controllers
-        driveController = new PIDController(DriveConstants.driveP, DriveConstants.driveI, DriveConstants.driveD, 0.02);
-        steerController = new PIDController(DriveConstants.steerP, DriveConstants.steerI, DriveConstants.steerD, 0.02);
+        driveController = new PIDController(DriveConstants.driveP, DriveConstants.driveI, DriveConstants.driveD);
+        steerController = new PIDController(DriveConstants.steerP, DriveConstants.steerI, DriveConstants.steerD);
 
         inputs = new SwerveModuleIOInputsAutoLogged();
     }
 
-    /** Updates the logged values.  Should be used in the periodic function. */
     @Override
     public void updateInputs() {
+        driveSim.update(0.02);
+        steerSim.update(0.02);
+
         inputs.state = getState();
         inputs.position = getPosition();
 
-        inputs.driveMeters += driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotToMeters / 60 * 0.02;
+        inputs.driveMeters += driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotPM / 60 * 0.02;
         inputs.steerRadians += steerSim.getAngularVelocityRadPerSec() * 0.02;
-        inputs.driveMPS += driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotToMeters / 60;
+        inputs.driveMPS += driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotPM / 60;
 
         inputs.driveCelsius = getDriveTemperature();
         inputs.steerCelsius = getSteerTemperature();
@@ -59,15 +63,16 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     }
 
     public void resetAngle() {
-        steerSim.setState(0, steerSim.getAngularVelocityRadPerSec());
+        steerSim.setState(steerSim.getAngularVelocityRadPerSec());
     }
 
     public Rotation2d getAngle() {
-        return new Rotation2d(steerSim.getAngularPositionRad());
+        return Rotation2d.fromRadians(inputs.steerRadians);
     }
 
     public void setAngle(Rotation2d angle) {
-        steerSim.setInputVoltage(steerController.calculate(getAngle().getRadians(), angle.getRadians()));
+        this.steerVoltage = steerController.calculate(getAngle().getRadians(), angle.getRadians());
+        steerSim.setInputVoltage(this.steerVoltage);
     }
 
     public double getVelocity() {
@@ -75,7 +80,8 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     }
 
     public void setVelocity(double mps) {
-        driveSim.setInputVoltage(driveController.calculate(getVelocity(), mps));
+        this.driveVoltage = driveController.calculate(getVelocity(), mps);
+        driveSim.setInputVoltage(this.driveVoltage);
     }
 
     public double getDistance() {
@@ -106,11 +112,11 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     }
 
     public double getDriveVoltage() {
-        return getVelocity() / DriveConstants.maxDriveSpeed * RobotController.getInputVoltage();
+        return this.driveVoltage;
     }
 
     public double getSteerVoltage() {
-        return steerSim.getAngularVelocityRadPerSec() / DriveConstants.maxSteerSpeed * RobotController.getInputVoltage();
+        return this.steerVoltage;
     }
 
     public double getDriveCurrent() {
