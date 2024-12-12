@@ -83,6 +83,6 @@ public class RobotContainer {
      * @return The command to run in Teleop mode.
      */
     public Command getTeleopCommand() {
-        return new SwerveDrive(() -> controller.getLeftX(), () -> controller.getLeftY(), () -> controller.getRightX());
+        return new SwerveDrive(() -> controller.getLeftX(), () -> -controller.getLeftY(), () -> controller.getRightX());
     }
 }
