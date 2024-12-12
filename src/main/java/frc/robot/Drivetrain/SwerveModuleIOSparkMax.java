@@ -42,8 +42,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
         // Configuring the drive encoder
         driveEncoder = driveMotor.getEncoder();
-        while (driveEncoder.setPositionConversionFactor(PhysicalConstants.driveRotToMeters) != REVLibError.kOk);
-        while (driveEncoder.setVelocityConversionFactor(PhysicalConstants.driveRotToMeters / 60) != REVLibError.kOk);
+        while (driveEncoder.setPositionConversionFactor(PhysicalConstants.driveRotPM) != REVLibError.kOk);
+        while (driveEncoder.setVelocityConversionFactor(PhysicalConstants.driveRotPM / 60) != REVLibError.kOk);
 
         // Configuring the drive PID controller
         driveController = driveMotor.getPIDController();
@@ -64,8 +64,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
         // Configuring the turn encoder
         turnEncoder = turnMotor.getEncoder();
-        while (turnEncoder.setPositionConversionFactor(PhysicalConstants.steerRotToRad) != REVLibError.kOk);
-        while (turnEncoder.setVelocityConversionFactor(PhysicalConstants.steerRotToRad / 60) != REVLibError.kOk);
+        while (turnEncoder.setPositionConversionFactor(PhysicalConstants.steerRotPRad) != REVLibError.kOk);
+        while (turnEncoder.setVelocityConversionFactor(PhysicalConstants.steerRotPRad / 60) != REVLibError.kOk);
 
         // Confuguring the turn PID controller
         turnController = turnMotor.getPIDController();
@@ -81,7 +81,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         absEncoder = new AnalogEncoder(encoderId);
 
         // Setting the turn encoder's position to one in this range.
-        while (turnEncoder.setPosition((absEncoder.get() - encoderOffset) * Math.PI * 2) != REVLibError.kOk);
+        while (turnEncoder.setPosition((absEncoder.get() - encoderOffset) * 2 * Math.PI) != REVLibError.kOk);
 
         inputs = new SwerveModuleIOInputsAutoLogged();
     }

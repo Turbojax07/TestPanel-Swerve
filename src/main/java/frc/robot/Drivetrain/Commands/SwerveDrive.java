@@ -49,19 +49,19 @@ public class SwerveDrive extends Command {
         xSpeed = MathUtil.applyDeadband(-xSpeed, DriveConstants.deadband);
         if (xSpeed > 0) xSpeed -= DriveConstants.deadband;
         if (xSpeed < 0) xSpeed += DriveConstants.deadband;
-        xSpeed *= DriveConstants.maxDriveSpeed;
+        xSpeed *= DriveConstants.maxDriveMPS;
 
         // Applying deadband and max speed to the ySpeed input
         ySpeed = MathUtil.applyDeadband(-ySpeed, DriveConstants.deadband);
         if (ySpeed > 0) ySpeed -= DriveConstants.deadband;
         if (ySpeed < 0) ySpeed += DriveConstants.deadband;
-        ySpeed *= DriveConstants.maxDriveSpeed;
+        ySpeed *= DriveConstants.maxDriveMPS;
 
         // Applying deadband and max speed to the zRotat input
         zRotat = MathUtil.applyDeadband(-zRotat, DriveConstants.deadband);
         if (zRotat > 0) zRotat -= DriveConstants.deadband;
         if (zRotat < 0) zRotat += DriveConstants.deadband;
-        zRotat *= DriveConstants.maxSteerSpeed;
+        zRotat *= DriveConstants.maxSteerRadPS;
 
         // Outputting the adjusted controller values to SmartDashboard
         SmartDashboard.putNumber("/Controller/LeftX_Adjusted", xSpeed);

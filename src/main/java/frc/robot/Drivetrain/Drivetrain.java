@@ -86,10 +86,10 @@ public class Drivetrain extends SubsystemBase {
         
         modules = new SwerveModuleIO[] { flModuleIO, frModuleIO, blModuleIO, brModuleIO};
         kinematics = new SwerveDriveKinematics(
-                new Translation2d(/* FL */-PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
-                new Translation2d(/* FR */ PhysicalConstants.robotWidth / 2.0,  PhysicalConstants.robotLength / 2.0),
-                new Translation2d(/* BL */-PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0),
-                new Translation2d(/* BR */ PhysicalConstants.robotWidth / 2.0, -PhysicalConstants.robotLength / 2.0));
+                new Translation2d(/* FL */-PhysicalConstants.robotWidthM / 2.0,  PhysicalConstants.robotLengthM / 2.0),
+                new Translation2d(/* FR */ PhysicalConstants.robotWidthM / 2.0,  PhysicalConstants.robotLengthM / 2.0),
+                new Translation2d(/* BL */-PhysicalConstants.robotWidthM / 2.0, -PhysicalConstants.robotLengthM / 2.0),
+                new Translation2d(/* BR */ PhysicalConstants.robotWidthM / 2.0, -PhysicalConstants.robotLengthM / 2.0));
 
         gyro = Gyro.getInstance();
         gyro.resetConfigs();
@@ -107,7 +107,7 @@ public class Drivetrain extends SubsystemBase {
                 this::setPose,
                 this::getSpeeds,
                 this::drive,
-                new HolonomicPathFollowerConfig(DriveConstants.maxDriveSpeed, PhysicalConstants.robotWidth / 2.0, new ReplanningConfig()),
+                new HolonomicPathFollowerConfig(DriveConstants.maxDriveMPS, PhysicalConstants.robotWidthM / 2.0, new ReplanningConfig()),
                 () -> (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red)),
                 this);
     }
