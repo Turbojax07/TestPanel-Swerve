@@ -42,92 +42,54 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
         inputs.state = getState();
         inputs.position = getPosition();
 
-        inputs.driveTemp = getDriveTemperature();
-        inputs.turnTemp = getTurnTemperature();
+        inputs.driveMeters += driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotToMeters / 60 * 0.02;
+        inputs.steerRadians += steerSim.getAngularVelocityRadPerSec() * 0.02;
+        inputs.driveMPS += driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotToMeters / 60;
+
+        inputs.driveCelsius = getDriveTemperature();
+        inputs.steerCelsius = getSteerTemperature();
 
         inputs.driveVoltage = getDriveVoltage();
-        inputs.turnVoltage = getTurnVoltage();
+        inputs.steerVoltage = getSteerVoltage();
 
         inputs.driveCurrent = getDriveCurrent();
-        inputs.turnCurrent = getTurnCurrent();
+        inputs.steerCurrent = getSteerCurrent();
 
         Logger.processInputs(name, inputs);
     }
 
-    /** Resets the angle of the relative encoder to 0. */
     public void resetAngle() {
         steerSim.setState(0, steerSim.getAngularVelocityRadPerSec());
     }
 
-    /**
-     * Gets the angle of the swerve module.
-     * 
-     * @return The angle as a Rotation2d.
-     */
     public Rotation2d getAngle() {
         return new Rotation2d(steerSim.getAngularPositionRad());
     }
 
-    /**
-     * Sets the angle of the swerve module using closed-loop control.
-     * 
-     * @param angle The angle as a Rotation2d.
-     */
     public void setAngle(Rotation2d angle) {
         steerSim.setInputVoltage(steerController.calculate(getAngle().getRadians(), angle.getRadians()));
     }
 
-    /**
-     * Gets the speed of the swerve module.
-     * 
-     * @return The speed in meters per second.
-     */
     public double getVelocity() {
-        return driveSim.getAngularVelocityRPM() * PhysicalConstants.driveRotToMeters / 60;
+        return inputs.driveMPS;
     }
 
-    /**
-     * Sets the speed of the swerve module.
-     * 
-     * @param speed The speed in meters per second.
-     */
-    public void setVelocity(double speed) {
-        driveSim.setInputVoltage(driveController.calculate(getVelocity(), speed));
+    public void setVelocity(double mps) {
+        driveSim.setInputVoltage(driveController.calculate(getVelocity(), mps));
     }
 
-    /**
-     * Gets the distance of the swerve module.
-     * 
-     * @return The distance in meters.
-     */
     public double getDistance() {
-
-        return driveSim.getAngularPositionRotations() * PhysicalConstants.driveRotToMeters;
+        return inputs.driveMeters;
     }
 
-    /**
-     * Gets the position of the swerve module.
-     * 
-     * @return The position as a SwerveModulePosition.
-     */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(getDistance(), getAngle());
     }
 
-    /**
-     * Gets the state of the swerve module.
-     * 
-     * @return The state as a SwerveModuleState.
-     */
     public SwerveModuleState getState() {
         return new SwerveModuleState(getVelocity(), getAngle());
     }
 
-    /**
-     * Sets the state of the swerve module.
-     * 
-     * @param state The state as a SwerveModuleState.
-     */
     public void setState(SwerveModuleState state) {
         SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getAngle());
 
@@ -135,33 +97,27 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
         setAngle(optimizedState.angle);
     }
 
-    @Override
     public double getDriveTemperature() {
         return 0;
     }
 
-    @Override
-    public double getTurnTemperature() {
+    public double getSteerTemperature() {
         return 0;
     }
 
-    @Override
     public double getDriveVoltage() {
         return getVelocity() / DriveConstants.maxDriveSpeed * RobotController.getInputVoltage();
     }
 
-    @Override
-    public double getTurnVoltage() {
+    public double getSteerVoltage() {
         return steerSim.getAngularVelocityRadPerSec() / DriveConstants.maxSteerSpeed * RobotController.getInputVoltage();
     }
 
-    @Override
     public double getDriveCurrent() {
         return driveSim.getCurrentDrawAmps();
     }
 
-    @Override
-    public double getTurnCurrent() {
+    public double getSteerCurrent() {
         return steerSim.getCurrentDrawAmps();
     }
 }

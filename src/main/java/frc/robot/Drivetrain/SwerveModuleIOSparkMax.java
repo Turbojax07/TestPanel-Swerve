@@ -86,97 +86,54 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         inputs = new SwerveModuleIOInputsAutoLogged();
     }
 
-    /** Updates the logged values.  Should be used in the periodic function. */
-    @Override
     public void updateInputs() {
         inputs.state = getState();
         inputs.position = getPosition();
 
-        inputs.driveTemp = getDriveTemperature();
-        inputs.turnTemp = getTurnTemperature();
+        inputs.driveCelsius = getDriveTemperature();
+        inputs.steerCelsius = getSteerTemperature();
 
         inputs.driveVoltage = getDriveVoltage();
-        inputs.turnVoltage = getTurnVoltage();
+        inputs.steerVoltage = getSteerVoltage();
 
         inputs.driveCurrent = getDriveCurrent();
-        inputs.turnCurrent = getTurnCurrent();
+        inputs.steerCurrent = getSteerCurrent();
 
         Logger.processInputs(name, inputs);
     }
 
-    /** Resets the angle of the relative encoder to 0. */
     public void resetAngle() {
         while (turnEncoder.setPosition(0) != REVLibError.kOk);
     }
 
-    /**
-     * Gets the angle of the swerve module.
-     * 
-     * @return The angle as a Rotation2d.
-     */
     public Rotation2d getAngle() {
         return new Rotation2d(turnEncoder.getPosition());
     }
 
-    /**
-     * Sets the angle of the swerve module using closed-loop control.
-     * 
-     * @param angle The angle as a Rotation2d.
-     */
     public void setAngle(Rotation2d angle) {
         while (turnController.setReference(angle.getRadians(), ControlType.kPosition) != REVLibError.kOk);
     }
 
-    /**
-     * Gets the speed of the swerve module.
-     * 
-     * @return The speed in meters per second.
-     */
     public double getVelocity() {
         return driveEncoder.getVelocity();
     }
 
-    /**
-     * Sets the speed of the swerve module.
-     * 
-     * @param speed The speed in meters per second.
-     */
     public void setVelocity(double speed) {
         while (driveController.setReference(speed, ControlType.kVelocity) != REVLibError.kOk);
     }
 
-    /**
-     * Gets the distance of the swerve module.
-     * 
-     * @return The distance in meters.
-     */
     public double getDistance() {
         return driveEncoder.getPosition();
     }
 
-    /**
-     * Gets the position of the swerve module.
-     * 
-     * @return The position as a SwerveModulePosition.
-     */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(getDistance(), getAngle());
     }
 
-    /**
-     * Gets the state of the swerve module.
-     * 
-     * @return The state as a SwerveModuleState.
-     */
     public SwerveModuleState getState() {
         return new SwerveModuleState(getVelocity(), getAngle());
     }
 
-    /**
-     * Sets the state of the swerve module.
-     * 
-     * @param state The state as a SwerveModuleState.
-     */
     public void setState(SwerveModuleState state) {
         SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getAngle());
 
@@ -184,33 +141,27 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         setAngle(optimizedState.angle);
     }
 
-    @Override
     public double getDriveTemperature() {
         return driveMotor.getMotorTemperature();
     }
 
-    @Override
-    public double getTurnTemperature() {
+    public double getSteerTemperature() {
         return turnMotor.getMotorTemperature();
     }
 
-    @Override
     public double getDriveVoltage() {
         return driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     }
 
-    @Override
-    public double getTurnVoltage() {
+    public double getSteerVoltage() {
         return turnMotor.getAppliedOutput() * turnMotor.getBusVoltage();
     }
 
-    @Override
     public double getDriveCurrent() {
         return driveMotor.getOutputCurrent();
     }
 
-    @Override
-    public double getTurnCurrent() {
+    public double getSteerCurrent() {
         return turnMotor.getOutputCurrent();
     }
 }

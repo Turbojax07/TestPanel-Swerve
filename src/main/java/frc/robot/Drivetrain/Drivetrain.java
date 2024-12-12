@@ -158,9 +158,21 @@ public class Drivetrain extends SubsystemBase {
      * @return Returns total current drawn by the drive motors
      */
     public double getDriveCurrent() {
+        int currentSum = 0;
+        for (SwerveModuleIO m : modules) {
+            currentSum += m.getDriveCurrent();
+        }
+
+        return currentSum;
+    }
+
+    /**
+     * @return Returns total current drawn by the turn motors
+     */
+    public double getSteerCurrent() {
         int sum = 0;
         for (SwerveModuleIO m : modules) {
-            sum += m.getDriveCurrent();
+            sum += m.getSteerCurrent();
         }
         return sum;
     }
@@ -201,19 +213,6 @@ public class Drivetrain extends SubsystemBase {
      */
     public ChassisSpeeds getSpeeds() {
         return kinematics.toChassisSpeeds(states);
-    }
-
-    /**
-     * 
-     * 
-     * @return Returns total current drawn by the turn motors
-     */
-    public double getTurnCurrent() {
-        int sum = 0;
-        for (SwerveModuleIO m : modules) {
-            sum += m.getTurnCurrent();
-        }
-        return sum;
     }
 
     /**
