@@ -93,6 +93,16 @@ public class Drivetrain extends SubsystemBase {
                 new Translation2d(/* BL */-PhysicalConstants.robotWidthM / 2.0, -PhysicalConstants.robotLengthM / 2.0),
                 new Translation2d(/* BR */ PhysicalConstants.robotWidthM / 2.0, -PhysicalConstants.robotLengthM / 2.0));
 
+                /*
+                 *       |      
+                 *   FL  |  FR  
+                 *       |      
+                 * -------------
+                 *       |      
+                 *   BL  |  BR  
+                 *       |      
+                 */
+
         gyro = Gyro.getInstance();
         gyro.resetConfigs();
         gyro.setAngle(new Rotation2d());
@@ -139,23 +149,15 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
-     * Drives the robot at the desired speeds with an overall feedback loop to
-     * ensure the speeds are met
+     * Drives the robot at the desired speeds with a PID loop to ensure speeds are met.
      *
      * @param speeds The desired speeds of the drivetrain
      */
     public void drive(ChassisSpeeds speeds) {
         SwerveModuleState[] desiredStates = kinematics.toSwerveModuleStates(speeds);
 
-        if (speeds.omegaRadiansPerSecond == 0) {
-            for (int i = 0; i < 4; i++) {
-                modules[i].setState(desiredStates[i]);
-            }
-        } else {
-            modules[0].setState(desiredStates[2]); // flm -> frs
-            modules[1].setState(desiredStates[3]); // frm -> brs
-            modules[2].setState(desiredStates[0]); // blm -> fls
-            modules[3].setState(desiredStates[1]); // brm -> bls
+        for (int i = 0; i < 4; i++) {
+            modules[i].setState(desiredStates[i]);
         }
     }
 
